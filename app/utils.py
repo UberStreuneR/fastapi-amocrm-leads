@@ -6,18 +6,6 @@ from settings import settings
 from auth import load_credentials, update_or_set_token
 
 
-import logging, sys
-
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
-    level=logging.DEBUG,
-    datefmt="%H:%M:%S",
-    stream=sys.stderr,
-)
-logger = logging.getLogger("Sockets")
-logging.getLogger("chardet.charsetprober").disabled = True
-
-
 async def prepare_headers_and_params():
 
     api_key, refresh_key = await load_credentials()
@@ -41,13 +29,11 @@ async def get_leads(id: int, is_company: bool, session: aiohttp.ClientSession):
         addendum = f"/companies/{id}"
     else:
         addendum = f"/contacts/{id}"
-    logger.info(f"Addendum: {addendum}")
     async with session.get(settings.API_URL + addendum, headers=headers, params=params) as response:
         if response.status == 200:
             content = await response.json()
             return content['_embedded']['leads']
         elif response.status == 401:
-            logger.info(f"HTTP401. API_URL: {settings.API_URL}\nHeaders: {headers}")
             raise HTTP401Exception
         else:
             pass

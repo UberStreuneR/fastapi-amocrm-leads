@@ -4,18 +4,6 @@ from settings import settings
 import os
 import requests
 
-import logging, sys
-
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
-    level=logging.DEBUG,
-    datefmt="%H:%M:%S",
-    stream=sys.stderr,
-)
-logger = logging.getLogger("Sockets")
-logging.getLogger("chardet.charsetprober").disabled = True
-
-
 async def make_auth_request(auth_endpoint, data):
     r = requests.post(auth_endpoint, data=data)
     if r.status_code == 200:
