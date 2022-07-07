@@ -3,6 +3,7 @@ import json
 from settings import settings
 import os
 import requests
+from json_utils import prettify_json
 
 async def make_auth_request(auth_endpoint, data):
     r = requests.post(auth_endpoint, data=data)
@@ -15,7 +16,7 @@ async def make_auth_request(auth_endpoint, data):
                 "API_KEY": token,
                 "REFRESH_KEY": refresh_token
             }
-            await file.write(json.dumps(data))
+            await file.write(prettify_json(json.dumps(data)))
         return token
     return None
 

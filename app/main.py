@@ -1,11 +1,15 @@
-from fastapi import FastAPI, Depends, HTTPException, status, Request
+import aiohttp
+from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
-from utils import get_count_success_leads, update_or_set_token
-
+from utils import (get_count_success_leads,
+                   update_or_set_token,
+                   prepare_hook,
+                   get_json_from_hook,
+                   handle_hook)
 
 app = FastAPI(docs_url=None, redoc_url=None)
 
@@ -32,11 +36,22 @@ async def swagger_ui_redirect():
 @app.on_event("startup")
 async def on_startup():
     await update_or_set_token()
+    await prepare_hook()
 
 
 @app.get("/successful-leads/{id}")
 async def successful_leads(id: int, is_company: bool, months):
     """Path-function для выведения количества успешных лидов контакта или компании за последние n месяцев"""
+    async with aiohttp.ClientSession() as session:
+        try:
+            results = await get_count_success_leads(id, is_company, months, session)
+        except TypeError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
+        return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
 
-    results = await get_count_success_leads(id, is_company, months)
-    return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
+@app.post("/")
+async def receive_hook(request: Request):
+    async with aiohttp.ClientSession() as session:
+        data = await get_json_from_hook(request)
+        await handle_hook(data, session)
+        return {"result": "Success"}

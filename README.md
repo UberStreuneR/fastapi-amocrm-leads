@@ -4,7 +4,8 @@
 - Создать внешнюю интеграцию в amoCRM
 - Внешний url указать https://example.com
 - Предоставить доступ: Все -- кликнуть
-- В файл .dev.env вставить id интеграции, secret_key и auth_key без кавычек
+- В файл .dev.env вставить id интеграции, secret_key, auth_key, поля для CRM (сделка, контакт, компания, протестировать можно с дефолтными)
+- Также вставить HOST_URL, куда вебхук будет отправлять POST запросы
 - $ docker-compose up
 
 ## Использование
@@ -16,8 +17,8 @@
   is_company: true
   months: 6
 
-  id: 50346643
-  is_company: true
+  id: 50346645
+  is_company: false
   months: 6
 
 - В докер встроен volume для проекта, попробуйте поменять API_KEY в app/creds.json
