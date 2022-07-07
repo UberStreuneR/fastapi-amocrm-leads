@@ -42,10 +42,6 @@ async def on_startup():
 
 @app.on_event("shutdown")
 async def on_shutdown():
-    with open("log.txt", mode="a") as log:
-        log.write("Application shutdown")
-    async with aiofiles.open("log.txt", 'w') as file:
-        await file.write('Shutdown')
     await delete_hook()
 
 

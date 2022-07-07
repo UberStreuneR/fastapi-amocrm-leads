@@ -57,21 +57,9 @@ async def delete_hook():
     webhook_post_data = {
         'destination': host_url,
     }
-    async with aiofiles.open("log.txt", 'a') as file:
-        data = {
-            'host_url': host_url,
-            'webhook_url': webhook_url,
-            'webhook_post_data': webhook_post_data
-        }
-        await file.write(json.dumps(data))
-
-    requests.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
-    # async with aiohttp.ClientSession() as session:
-    #     async with session.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data)) as response:
-    #         r = await response.json()
-    #         async with aiofiles.open("log.txt", 'a') as file:
-    #             await file.write(r)
-
+    # requests.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
+    async with aiohttp.ClientSession() as session:
+        await session.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
 
 
 async def get_leads(id: int, is_company: bool, session: aiohttp.ClientSession):
