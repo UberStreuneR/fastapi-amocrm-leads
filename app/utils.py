@@ -10,15 +10,8 @@ from querystring_parser import parser
 import requests
 
 
-import logging, sys
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
-    level=logging.DEBUG,
-    datefmt="%H:%M:%S",
-    stream=sys.stderr,
-)
-logger = logging.getLogger("Sockets")
-logging.getLogger("chardet.charsetprober").disabled = True
+from logger import logger
+
 
 
 async def prepare_headers():
@@ -96,14 +89,12 @@ async def check_lead(lead_link, session, months):
 
     async with session.get(lead_link, headers=headers) as response:
         content = await response.json(content_type=None)
-        # logger.info(f"LEAD CONTENT \n\n\n{content}\n\n\n")
         created_at = content['created_at']
         date = datetime.fromtimestamp(created_at)
         if datetime.now() - date > timedelta(days=int(months)*30):
             return None
         try:
             if content['custom_fields_values'][0]['values'][0]['value'] == 'Оплата получена':
-                # logger.info(f"FIELD VALUE {content['custom_fields_values'][0]['values'][0]['value']}")
                 return content['price']
             elif not 'Этап &quot;Закрыто&quot;' in str(content['custom_fields_values']):
                 return "Open Lead"
