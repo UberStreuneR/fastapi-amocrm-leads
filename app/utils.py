@@ -5,7 +5,7 @@ import json
 from fastapi import Request
 from exceptions import HTTP401Exception
 from settings import settings
-from auth import load_credentials, update_or_set_token
+from auth import load_credentials, update_token
 from querystring_parser import parser
 import requests
 
@@ -39,12 +39,39 @@ async def prepare_hook():
         'destination': host_url,
         'settings': ['restore_lead', 'add_lead', 'update_lead', 'status_lead']
     }
+    params = {
+        "filter[destination]": host_url
+    }
     async with aiohttp.ClientSession() as session:
-        async with session.get(webhook_url, headers=headers) as response:
+        async with session.get(webhook_url, headers=headers, params=params) as response:
             response_data = await response.json()
         if host_url not in str(response_data):
-            async with session.post(webhook_url, headers=headers, data=json.dumps(webhook_post_data)) as post:
-                post_response = await post.json()
+            await session.post(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
+
+
+async def delete_hook():
+    
+    headers = await prepare_headers()
+    host_url = settings.HOST_URL
+    webhook_url = settings.API_URL + "/webhooks"
+    webhook_post_data = {
+        'destination': host_url,
+    }
+    async with aiofiles.open("log.txt", 'a') as file:
+        data = {
+            'host_url': host_url,
+            'webhook_url': webhook_url,
+            'webhook_post_data': webhook_post_data
+        }
+        await file.write(json.dumps(data))
+
+    requests.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
+    # async with aiohttp.ClientSession() as session:
+    #     async with session.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data)) as response:
+    #         r = await response.json()
+    #         async with aiofiles.open("log.txt", 'a') as file:
+    #             await file.write(r)
+
 
 
 async def get_leads(id: int, is_company: bool, session: aiohttp.ClientSession):
@@ -97,7 +124,7 @@ async def get_count_success_leads(id: int, is_company: bool, months: int, sessio
     try:
         leads = await get_leads(id, is_company, session)
     except HTTP401Exception:
-        await asyncio.create_task(update_or_set_token())
+        await asyncio.create_task(update_token())
         leads = await asyncio.create_task(get_leads(id, is_company, session))
 
     tasks = []
@@ -148,7 +175,6 @@ async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession
         except IndexError:
             return main_contact, None
         
-
 
 async def get_main_contacts_success_leads(contact_id, session: aiohttp.ClientSession):
     results = await get_count_success_leads(contact_id, is_company=False, months=6, session=session)
@@ -232,7 +258,7 @@ async def handle_hook(data, session: aiohttp.ClientSession):
 
         company_results_sum = sum(company_results)
         await update_company_leads_sum_field(company_id, company_results_sum, session)
-        
+
     await update_contact_leads_amount_field(main_contact_id, len(main_contact_results), session)
 
 

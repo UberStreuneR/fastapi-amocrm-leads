@@ -1,4 +1,4 @@
-import aiohttp
+import aiohttp, aiofiles
 from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import (
@@ -6,10 +6,12 @@ from fastapi.openapi.docs import (
     get_swagger_ui_oauth2_redirect_html,
 )
 from utils import (get_count_success_leads,
-                   update_or_set_token,
                    prepare_hook,
                    get_json_from_hook,
+                   delete_hook,
                    handle_hook)
+from auth import set_token
+
 
 app = FastAPI(docs_url=None, redoc_url=None)
 
@@ -35,8 +37,16 @@ async def swagger_ui_redirect():
 
 @app.on_event("startup")
 async def on_startup():
-    await update_or_set_token()
+    await set_token()
     await prepare_hook()
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    with open("log.txt", mode="a") as log:
+        log.write("Application shutdown")
+    async with aiofiles.open("log.txt", 'w') as file:
+        await file.write('Shutdown')
+    await delete_hook()
 
 
 @app.get("/successful-leads/{id}")

@@ -45,7 +45,7 @@ async def load_credentials():
         return None, None
 
 
-async def update_or_set_token():
+async def set_token():
     auth_endpoint = settings.AUTH_ENDPOINT
     INTEGRATION_ID = os.environ.get("INTEGRATION_ID")
     SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -65,12 +65,23 @@ async def update_or_set_token():
             'grant_type': 'authorization_code',
             'code': AUTH_KEY,
         })
+        token = await make_auth_request(auth_endpoint, data)
+        return token
 
-    else: # if the key is stale or we got HTTP401
-        data.update({
-            'grant_type': 'refresh_token',
-            'refresh_token': REFRESH_KEY,
-        })
+async def update_token():
+    auth_endpoint = settings.AUTH_ENDPOINT
+    INTEGRATION_ID = os.environ.get("INTEGRATION_ID")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+
+    AUTH_KEY, REFRESH_KEY = await load_credentials()
+
+    data = {
+        'client_id': INTEGRATION_ID,
+        'client_secret': SECRET_KEY,
+        'grant_type': 'refresh_token',
+        'refresh_token': REFRESH_KEY,
+        'redirect_uri': 'https://example.com'
+    }
 
     token = await make_auth_request(auth_endpoint, data)
     return token
