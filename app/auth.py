@@ -6,6 +6,8 @@ import requests
 from json_utils import prettify_json
 
 async def make_auth_request(auth_endpoint, data):
+    """Производит запрос на получение либо обновление токена"""
+
     r = requests.post(auth_endpoint, data=data)
     if r.status_code == 200:
         response_data = r.json()
@@ -22,6 +24,8 @@ async def make_auth_request(auth_endpoint, data):
 
 
 async def save_credentials(token, refresh_token):
+    """Сохраняет REFRESH_KEY и API_KEY"""
+
     async with aiofiles.open("creds.json", "w") as file:
         data = {
             "API_KEY": token,
@@ -31,6 +35,8 @@ async def save_credentials(token, refresh_token):
 
 
 async def load_credentials():
+    """Загружает REFRESH_KEY и API_KEY"""
+
     try:
         async with aiofiles.open("creds.json", 'r') as file:
             data = await file.read()
@@ -46,6 +52,8 @@ async def load_credentials():
 
 
 async def set_token():
+    """Устанавливает токен, если его нет (сразу после запуска)"""
+
     auth_endpoint = settings.AUTH_ENDPOINT
     INTEGRATION_ID = os.environ.get("INTEGRATION_ID")
     SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -69,6 +77,8 @@ async def set_token():
         return token
 
 async def update_token():
+    """Обновляет токен"""
+
     auth_endpoint = settings.AUTH_ENDPOINT
     INTEGRATION_ID = os.environ.get("INTEGRATION_ID")
     SECRET_KEY = os.environ.get("SECRET_KEY")

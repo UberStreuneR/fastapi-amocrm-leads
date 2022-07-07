@@ -5,8 +5,7 @@ from fastapi.openapi.docs import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
-from utils import (get_count_success_leads,
-                   prepare_hook,
+from utils import (prepare_hook,
                    get_json_from_hook,
                    delete_hook,
                    handle_hook)
@@ -40,20 +39,22 @@ async def on_startup():
     await set_token()
     await prepare_hook()
 
+
+#TODO: Функция удаляет хук как должно, проверено. Не работает shutdown event для FastAPI в Докере
 @app.on_event("shutdown")
 async def on_shutdown():
     await delete_hook()
 
 
-@app.get("/successful-leads/{id}")
-async def successful_leads(id: int, is_company: bool, months):
-    """Path-function для выведения количества успешных лидов контакта или компании за последние n месяцев"""
-    async with aiohttp.ClientSession() as session:
-        try:
-            results = await get_count_success_leads(id, is_company, months, session)
-        except TypeError:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
-        return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
+# @app.get("/successful-leads/{id}")
+# async def successful_leads(id: int, is_company: bool, months):
+#     """Path-function для выведения количества успешных лидов контакта или компании за последние n месяцев"""
+#     async with aiohttp.ClientSession() as session:
+#         try:
+#             results = await get_count_success_leads(id, is_company, months, session)
+#         except TypeError:
+#             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
+#         return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
 
 @app.post("/")
 async def receive_hook(request: Request):

@@ -32,6 +32,8 @@ async def prepare_headers():
     
 
 async def prepare_hook():
+    """Проверяет, есть ли хук для текущего хоста, если нет, создает"""
+
     headers = await prepare_headers()
     host_url = settings.HOST_URL
     webhook_url = settings.API_URL + "/webhooks"
@@ -50,7 +52,9 @@ async def prepare_hook():
 
 
 async def delete_hook():
+    """Удаляет хук"""
     
+
     headers = await prepare_headers()
     host_url = settings.HOST_URL
     webhook_url = settings.API_URL + "/webhooks"
@@ -108,6 +112,7 @@ async def check_lead(lead_link, session, months):
 
 
 async def get_count_success_leads(id: int, is_company: bool, months: int, session: aiohttp.ClientSession):
+    """Возвращает список успешных и открытых лидов"""
 
     try:
         leads = await get_leads(id, is_company, session)
@@ -127,6 +132,8 @@ async def get_count_success_leads(id: int, is_company: bool, months: int, sessio
 
 
 async def get_json_from_hook(request: Request):
+    """Обрабатывает тело запроса вебхука"""
+
     if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
@@ -138,6 +145,9 @@ def get_lead_id(data):
 
 
 async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession):
+    """Возвращает id основного контакта и компании для лида"""
+
+
     params = {
         'with': 'contacts'
     }
@@ -165,14 +175,20 @@ async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession
         
 
 async def get_main_contacts_success_leads(contact_id, session: aiohttp.ClientSession):
+    """Возвращает список успешных и открытых лидов для контакта"""
+
     results = await get_count_success_leads(contact_id, is_company=False, months=6, session=session)
     return results
 
 async def get_company_success_leads(company_id, session: aiohttp.ClientSession):
+    """Возвращает список успешных и открытых лидов для компании"""
+
     results = await get_count_success_leads(company_id, is_company=True, months=6, session=session)
     return results
 
 async def update_company_leads_sum_field(company_id, sum_of_leads: int, session: aiohttp.ClientSession):
+    """Обновляет поле суммы сделок для компании"""
+
 
     headers= await prepare_headers()
 
@@ -193,6 +209,8 @@ async def update_company_leads_sum_field(company_id, sum_of_leads: int, session:
     logger.info(f"COMPANY UPDATED {company_id}, value {sum_of_leads}")
 
 async def update_contact_leads_amount_field(contact_id, amount: int, session: aiohttp.ClientSession):
+    """Обновляет поле количества успешных сделок для контакта"""
+
     headers= await prepare_headers()
 
     url = settings.API_URL + f"/contacts/{contact_id}"
@@ -212,7 +230,8 @@ async def update_contact_leads_amount_field(contact_id, amount: int, session: ai
     logger.info(f"CONTACT UPDATED {contact_id}, value {amount}")
 
 async def update_active_lead_main_contact_amount(lead_id, amount: int, session: aiohttp.ClientSession):
-    
+    """Обновляет поле количества успешных сделок основного контакта лида"""
+
     lead_link = settings.API_URL + f"/leads/{lead_id}"
 
     check_lead_result = await check_lead(lead_link, session, months=6)
@@ -235,6 +254,8 @@ async def update_active_lead_main_contact_amount(lead_id, amount: int, session: 
 
 
 async def handle_hook(data, session: aiohttp.ClientSession):
+    """Обрабатывает полученный вебхук, делает запросы на изменение полей"""
+
     main_contact_id, company_id = await get_lead_main_contact_and_company(data, session)
     main_contact_results = await get_main_contacts_success_leads(main_contact_id, session)
     # print(main_contact_results)
