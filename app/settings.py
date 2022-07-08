@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     LEADS_FIELD_ID: int = os.environ.get("LEADS_FIELD_ID")
     CONTACTS_FIELD_ID: int = os.environ.get("CONTACTS_FIELD_ID")
     COMPANY_FIELD_ID: int = os.environ.get("COMPANY_FIELD_ID")
+    pipeline_id: int = None
+    success_stage_id: int = None
 
 
 settings = Settings()

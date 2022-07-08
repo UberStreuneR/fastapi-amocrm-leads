@@ -1,3 +1,4 @@
+from cmath import pi
 import aiohttp, aiofiles
 from fastapi import FastAPI, HTTPException, status, Request
 from fastapi.staticfiles import StaticFiles
@@ -8,9 +9,11 @@ from fastapi.openapi.docs import (
 from utils import (prepare_hook,
                    get_json_from_hook,
                    delete_hook,
-                   handle_hook)
+                   handle_hook,
+                   get_count_success_leads,
+                   prepare_pipeline_and_success_stage_id)
 from auth import set_token
-
+from logger import logger
 
 app = FastAPI(docs_url=None, redoc_url=None)
 
@@ -38,6 +41,7 @@ async def swagger_ui_redirect():
 async def on_startup():
     await set_token()
     await prepare_hook()
+    await prepare_pipeline_and_success_stage_id()
 
 
 #TODO: Функция удаляет хук как должно, проверено. Не работает shutdown event для FastAPI в Докере
@@ -46,15 +50,16 @@ async def on_shutdown():
     await delete_hook()
 
 
-# @app.get("/successful-leads/{id}")
-# async def successful_leads(id: int, is_company: bool, months):
-#     """Path-function для выведения количества успешных лидов контакта или компании за последние n месяцев"""
-#     async with aiohttp.ClientSession() as session:
-#         try:
-#             results = await get_count_success_leads(id, is_company, months, session)
-#         except TypeError:
-#             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
-#         return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
+@app.get("/successful-leads/{id}")
+async def successful_leads(id: int, is_company: bool, months):
+    """Path-function для выведения количества успешных лидов контакта или компании за последние n месяцев"""
+    async with aiohttp.ClientSession() as session:
+        try:
+            results = await get_count_success_leads(id, is_company, months, session)
+        except TypeError:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
+        logger.info(f"Result {results}")
+        return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
 
 @app.post("/")
 async def receive_hook(request: Request):
@@ -62,3 +67,5 @@ async def receive_hook(request: Request):
         data = await get_json_from_hook(request)
         await handle_hook(data, session)
         return {"result": "Success"}
+
+    
