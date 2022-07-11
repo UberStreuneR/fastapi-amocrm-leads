@@ -13,6 +13,43 @@ import requests
 from logger import logger
 
 
+async def request_or_retry(url, request_type, session, headers=None, params=None, data=None, seconds=0):
+    if request_type == "GET":
+        async with session.get(url, headers=headers, params=json.dumps(params)) as request:
+            try:
+                response = await request.json()
+                return response
+            except aiohttp.client_exceptions.ContentTypeError as e:
+                logger.info(e)
+    elif request_type == "POST":
+        async with session.post(url, headers=headers, params=params, data=json.dumps(data)) as request:
+            try:
+                response = await request.json()
+                return response
+            except aiohttp.client_exceptions.ContentTypeError as e:
+                logger.info(e)
+    elif request_type == "PATCH":
+        async with session.patch(url, headers=headers, params=params, data=json.dumps(data)) as request:
+            try:
+                response = await request.json()
+                return response
+            except aiohttp.client_exceptions.ContentTypeError as e:
+                logger.info(e)
+    elif request_type == "DELETE":
+        async with session.delete(url, headers=headers, params=params, data=json.dumps(data)) as request:
+            try:
+                response = await request.json()
+                return response
+            except aiohttp.client_exceptions.ContentTypeError as e:
+                logger.info(e)
+
+    if request.status == 429:
+        if seconds > 50:
+            return
+        await asyncio.sleep(seconds + 5)
+        return request_or_retry(url, request_type, session, headers, params, data, seconds + 5)
+
+
 
 async def prepare_headers():
 
@@ -37,16 +74,28 @@ async def prepare_hook():
     params = {
         "filter[destination]": host_url
     }
+    
     async with aiohttp.ClientSession() as session:
-        async with session.get(webhook_url, headers=headers, params=params) as response:
-            response_data = await response.json()
+        # async with session.get(webhook_url, headers=headers, params=params) as response:
+        #     response_data = await response.json()
+        #     logger.info('RESPONSE_DATA', response_data)
+        #     r = requests.get("https://devks.amocrm.ru/api/v4/webhooks", headers=headers, params=json.dumps(params))
+        #     logger.info(f"RESPONSE DATA 2 {r.json()}")
+        request_kwargs = {
+            'url': webhook_url,
+            'request_type': "GET",
+            'session': session,
+            'headers': headers,
+            'params': params
+        }
+        response_data = await request_or_retry(**request_kwargs)
+        
         if host_url not in str(response_data):
             await session.post(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
 
 
 async def delete_hook():
     """Удаляет хук"""
-    
 
     headers = await prepare_headers()
     host_url = settings.HOST_URL
@@ -57,41 +106,6 @@ async def delete_hook():
     # requests.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
     async with aiohttp.ClientSession() as session:
         await session.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
-
-
-# async def write_pipeline_id(pipeline_id):
-#     try:
-#         async with aiofiles.open("values.json", 'r') as file:
-#             data = await file.read()
-#             data = json.loads(data)
-#             print("TYPEOFDATA", type(data))
-#             if type(data) == str:
-#                 raise TypeError
-#     except FileNotFoundError:
-#         data = {}
-#     except TypeError:
-#         data = {}
-#     finally:
-#         data['pipeline_id'] = pipeline_id
-#         async with aiofiles.open("values.json", 'w') as file:
-#             await file.write(json.dumps(data))
-
-
-# async def write_success_stage_id(success_stage_id):
-#     try:
-#         async with aiofiles.open("values.json", 'r') as file:
-#             data = await file.read()
-#             data = json.loads(data)
-#             if type(data) == str:
-#                 raise TypeError
-#     except FileNotFoundError:
-#         data = {}
-#     except TypeError:
-#         data = {}
-#     finally:
-#         data['success_stage_id'] = success_stage_id
-#         async with aiofiles.open("values.json", 'w') as file:
-#             await file.write(json.dumps(data))
 
 
 async def get_pipeline_id(session: aiohttp.ClientSession):

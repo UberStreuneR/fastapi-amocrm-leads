@@ -13,6 +13,7 @@ from utils import (prepare_hook,
                    get_count_success_leads,
                    prepare_pipeline_and_success_stage_id)
 from auth import set_token
+from settings import settings
 from logger import logger
 
 app = FastAPI(docs_url=None, redoc_url=None)
@@ -59,6 +60,8 @@ async def successful_leads(id: int, is_company: bool, months):
         except TypeError:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
         logger.info(f"Result {results}")
+        while "Open Lead" in results:
+            results.remove("Open Lead")
         return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
 
 @app.post("/")
@@ -67,5 +70,16 @@ async def receive_hook(request: Request):
         data = await get_json_from_hook(request)
         await handle_hook(data, session)
         return {"result": "Success"}
+
+@app.get("/delete-hook")
+async def request_delete_hook():
+    await delete_hook()
+    return {"result": "Success"}
+
+@app.get("/retrieve-settings")
+async def retrieve_settings():
+    pipeline_id = settings.pipeline_id
+    success_stage_id = settings.success_stage_id
+    return {"pipeline": pipeline_id, "success_stage": success_stage_id}
 
     
