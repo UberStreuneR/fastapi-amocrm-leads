@@ -14,8 +14,8 @@ from logger import logger
 
 
 async def request_or_retry(url, request_type, session, headers=None, params=None, data=None, seconds=0, add=None):
-    logger.info(f"REQUEST OR RETRY CALLED, SECONDS {seconds}")
-    logger.info(f"URL {url}, REQUEST {request_type}\nParams {params}\ndata {data}\nadd {add}")
+    # logger.info(f"REQUEST OR RETRY CALLED, SECONDS {seconds}")
+    # logger.info(f"URL {url}, REQUEST {request_type}\nParams {params}\ndata {data}\nadd {add}")
     if request_type == "GET":
         async with session.get(url, headers=headers, params=params) as request:
             try:
@@ -33,9 +33,9 @@ async def request_or_retry(url, request_type, session, headers=None, params=None
     elif request_type == "PATCH":
         async with session.patch(url, headers=headers, data=data) as request:
             try:
-                logger.info("AWAITING RESPONSE")
+                # logger.info("AWAITING RESPONSE")
                 response = await request.json()
-                logger.info("RESPONSE RECEIVED")
+                # logger.info("RESPONSE RECEIVED")
                 return response
             except aiohttp.client_exceptions.ContentTypeError as e:
                 logger.info(e)
@@ -50,7 +50,7 @@ async def request_or_retry(url, request_type, session, headers=None, params=None
     if request.status == 429:
         if seconds > 50:
             return
-        logger.info(f"AWAITING {seconds + 5} seconds\nRESPONSE {await request.text()}")
+        # logger.info(f"AWAITING {seconds + 5} seconds\nRESPONSE {await request.text()}")
         await asyncio.sleep(seconds + 5)
         return await request_or_retry(url, request_type, session, headers, params, data, seconds + 5)
     elif request.status == 401:    
@@ -120,6 +120,7 @@ async def delete_hook():
 async def get_pipeline_id(session: aiohttp.ClientSession):
     headers = await prepare_headers()
     url = settings.API_URL + "/leads/pipelines"
+    # logger.info(f"URL {url}")
     async with session.get(url, headers=headers) as r:
         response = await r.json()
         for pipeline in response['_embedded']['pipelines']:
@@ -315,7 +316,7 @@ async def update_company_leads_sum_field(company_id, sum_of_leads: int, session:
     }
 
     result = await request_or_retry(**request_kwargs)
-    logger.info(f"COMPANY UPDATER RESULT {result}")
+    # logger.info(f"COMPANY UPDATER RESULT {result}")
 
     # async with session.patch(url, headers=headers, data=json.dumps(fields_data)) as response:
         # r = await response.json()
@@ -324,7 +325,7 @@ async def update_company_leads_sum_field(company_id, sum_of_leads: int, session:
 
 async def update_contact_leads_amount_field(contact_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок для контакта"""
-    logger.info(f"CONTACT UPDATER CALLED, VALUE {amount}")
+    # logger.info(f"CONTACT UPDATER CALLED, VALUE {amount}")
     headers= await prepare_headers()
 
     url = settings.API_URL + f"/contacts/{contact_id}"
@@ -348,7 +349,7 @@ async def update_contact_leads_amount_field(contact_id, amount: int, session: ai
     }
 
     result = await request_or_retry(**request_kwargs)
-    logger.info(f"CONTACT UPDATER RESULT {result}")
+    # logger.info(f"CONTACT UPDATER RESULT {result}")
 
     # async with session.patch(url, headers=headers, data=json.dumps(fields_data)) as response:
         # r = await response.json()
@@ -357,7 +358,7 @@ async def update_contact_leads_amount_field(contact_id, amount: int, session: ai
 
 async def update_active_lead_main_contact_amount(lead_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок основного контакта лида"""
-    logger.info(f"LEAD UPDATER CALLED, VALUE {amount}")
+    # logger.info(f"LEAD UPDATER CALLED, VALUE {amount}")
     lead_link = settings.API_URL + f"/leads/{lead_id}"
 
     # check_lead_result = await check_lead(lead_link, session, months=6)
@@ -385,7 +386,7 @@ async def update_active_lead_main_contact_amount(lead_id, amount: int, session: 
         'add': "Called from lead updater"
     }
     result = await request_or_retry(**request_kwargs)
-    logger.info(f"LEAD UPDATER RESULT {result}")
+    # logger.info(f"LEAD UPDATER RESULT {result}")
     # async with session.patch(lead_link, headers=headers, data=json.dumps(fields_data)) as response:
     #     r = await response.json()
         # logger.info(f"Response: {r}")
