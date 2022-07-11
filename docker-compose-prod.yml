@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: app
+    command: sh -c "cd app && uvicorn main:app --reload --host 0.0.0.0 --port 80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.subdomain=sum-leads"
+      - "traefik.http.services.sum-leads.loadbalancer.server.port=80"
+      - "traefik.http.routers.sum-leads.tls.certresolver=letsEncrypt"
+    volumes:
+      - ./app/:/code/app
+    # ports:
+    #   - 8000:80
+    env_file:
+      - ./.prod.env
+
+networks:
+  default:
+    external:
