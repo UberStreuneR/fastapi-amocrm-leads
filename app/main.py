@@ -66,6 +66,7 @@ async def successful_leads(id: int, is_company: bool, months):
 
 @app.post("/")
 async def receive_hook(request: Request):
+    # logger.info("RECEIVED A HOOK")
     async with aiohttp.ClientSession() as session:
         data = await get_json_from_hook(request)
         await handle_hook(data, session)
@@ -81,5 +82,9 @@ async def retrieve_settings():
     pipeline_id = settings.pipeline_id
     success_stage_id = settings.success_stage_id
     return {"pipeline": pipeline_id, "success_stage": success_stage_id}
+
+@app.get("/create-hook")
+async def create_webhook():
+    await prepare_hook()
 
     
