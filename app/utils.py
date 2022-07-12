@@ -7,66 +7,9 @@ from exceptions import HTTP401Exception
 from settings import settings
 from auth import load_credentials, update_token
 from querystring_parser import parser
-import requests
 from prepare import prepare_headers
-
-
+from request_template import request_or_retry
 from logger import logger
-
-
-async def request_or_retry(url, request_type, session, headers=None, params=None, data=None, seconds=0, add=None):
-
-    if request_type == "GET":
-        async with session.get(url, headers=headers, params=params) as request:
-            try:
-                response = await request.json()
-                return response
-            except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.exception(e)
-
-    elif request_type == "POST":
-        async with session.post(url, headers=headers, params=params, data=json.dumps(data)) as request:
-            try:
-                response = await request.json()
-                return response
-            except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.exception(e)
-
-    elif request_type == "PATCH":
-        async with session.patch(url, headers=headers, data=data) as request:
-            try:
-                response = await request.json()
-                return response
-            except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.exception(e)
-                
-    elif request_type == "DELETE":
-        async with session.delete(url, headers=headers, params=params, data=json.dumps(data)) as request:
-            try:
-                response = await request.json()
-                return response
-            except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.exception(e)
-    
-    request_kwargs = {
-        'url': url,
-        'request_type': request_type,
-        'session': session,
-        'headers': headers,
-        'params': params,
-        'data': data,
-        'seconds': seconds + 5
-    }
-
-    if request.status == 429:
-        if seconds > 50:
-            return
-        # logger.info(f"AWAITING {seconds + 5} seconds\nRESPONSE {await request.text()}")
-        await asyncio.sleep(seconds + 5)
-        return await request_or_retry(**request_kwargs)
-    elif request.status == 401:    
-        await update_token()
-        return await request_or_retry(**request_kwargs)
 
 
 async def delete_hook():
@@ -275,6 +218,9 @@ async def update_contact_leads_amount_field(contact_id, amount: int, session: ai
 async def update_active_lead_main_contact_amount(lead_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок основного контакта лида"""
     lead_link = settings.API_URL + f"/leads/{lead_id}"
+    lead_result = await check_lead(lead_link=lead_link, session=session, months=6)
+    if lead_result != "Open Lead":
+        return
     headers= await prepare_headers()
     fields_data = {
         "custom_fields_values": [{

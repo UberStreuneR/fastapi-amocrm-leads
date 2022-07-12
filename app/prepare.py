@@ -3,6 +3,7 @@ import json
 from utils import load_credentials
 from request_template import request_or_retry
 from settings import settings
+from logger import logger
 
 async def prepare_headers():
 
@@ -41,7 +42,7 @@ async def prepare_hook():
         response_data = await request_or_retry(**request_kwargs)
         
         if host_url not in str(response_data):
-            await request_or_retry(url=webhook_url, request_type="POST", session=session, headers=headers, data=json.dumps(webhook_post_data))
+            result = await request_or_retry(url=webhook_url, request_type="POST", session=session, headers=headers, data=webhook_post_data)
 
 
 async def get_pipeline_id(session: aiohttp.ClientSession):
