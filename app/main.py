@@ -70,6 +70,7 @@ async def receive_hook(request: Request):
     # logger.info("RECEIVED A HOOK")
     async with aiohttp.ClientSession() as session:
         data = await get_json_from_hook(request)
+        logger.info(f"Data {data}")
         await handle_hook(data, session)
         return {"result": "Success"}
 

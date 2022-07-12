@@ -69,7 +69,7 @@ async def check_lead(lead_link, session, months):
     if datetime.now() - date > timedelta(days=int(months)*30):
         return None
     try:
-        if content['status_id'] == settings.success_stage_id:
+        if content['status_id'] == settings.success_stage_id and content['pipeline_id'] == settings.pipeline_id:
             return content['price']
         else:
             return "Open Lead"
