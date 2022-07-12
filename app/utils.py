@@ -112,7 +112,7 @@ def get_lead_id(data):
 
 
 async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession):
-    """Возвращает id основного контакта и компании для лида"""
+    """Возвращает id основного контакта для лида и его компании, если она есть"""
 
 
     params = {
@@ -125,6 +125,7 @@ async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession
     headers = await prepare_headers()
 
     main_contact, company = None, None
+    main_contact_link = None
 
     request_kwargs = {
         'url': lead_link,
@@ -140,11 +141,24 @@ async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession
     for contact in contacts:
         if contact['is_main']:
             main_contact = contact['id']
+            main_contact_link = contact['_links']['self']['href']
 
-    company = content['_embedded']['companies']
+    contact_request_kwargs = {
+        'url': main_contact_link,
+        'request_type': 'GET',
+        'headers': headers,
+        'session': session
+    }
+
+    contact_data = await request_or_retry(**contact_request_kwargs)
+    contact_companies = contact_data['_embedded']['companies']
     try:
-        company = company[0]
-        return main_contact, company['id']
+        company = contact_companies[0]['id']
+        return main_contact, company
+    # company = content['_embedded']['companies']
+    # try:
+    #     company = company[0]
+    #     return main_contact, company['id']
     except IndexError:
         return main_contact, None
         
