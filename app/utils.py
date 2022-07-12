@@ -8,99 +8,65 @@ from settings import settings
 from auth import load_credentials, update_token
 from querystring_parser import parser
 import requests
+from prepare import prepare_headers
 
 
 from logger import logger
 
 
 async def request_or_retry(url, request_type, session, headers=None, params=None, data=None, seconds=0, add=None):
-    # logger.info(f"REQUEST OR RETRY CALLED, SECONDS {seconds}")
-    # logger.info(f"URL {url}, REQUEST {request_type}\nParams {params}\ndata {data}\nadd {add}")
+
     if request_type == "GET":
         async with session.get(url, headers=headers, params=params) as request:
             try:
                 response = await request.json()
                 return response
             except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.info(e)
+                logger.exception(e)
+
     elif request_type == "POST":
         async with session.post(url, headers=headers, params=params, data=json.dumps(data)) as request:
             try:
                 response = await request.json()
                 return response
             except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.info(e)
+                logger.exception(e)
+
     elif request_type == "PATCH":
         async with session.patch(url, headers=headers, data=data) as request:
             try:
-                # logger.info("AWAITING RESPONSE")
                 response = await request.json()
-                # logger.info("RESPONSE RECEIVED")
                 return response
             except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.info(e)
+                logger.exception(e)
+                
     elif request_type == "DELETE":
         async with session.delete(url, headers=headers, params=params, data=json.dumps(data)) as request:
             try:
                 response = await request.json()
                 return response
             except aiohttp.client_exceptions.ContentTypeError as e:
-                logger.info(e)
-    logger.info(f'REQUEST STATUS {request.status}')
+                logger.exception(e)
+    
+    request_kwargs = {
+        'url': url,
+        'request_type': request_type,
+        'session': session,
+        'headers': headers,
+        'params': params,
+        'data': data,
+        'seconds': seconds + 5
+    }
+
     if request.status == 429:
         if seconds > 50:
             return
         # logger.info(f"AWAITING {seconds + 5} seconds\nRESPONSE {await request.text()}")
         await asyncio.sleep(seconds + 5)
-        return await request_or_retry(url, request_type, session, headers, params, data, seconds + 5)
+        return await request_or_retry(**request_kwargs)
     elif request.status == 401:    
         await update_token()
-        return await request_or_retry(url, request_type, session, headers, params, data, seconds + 5)
-
-
-
-async def prepare_headers():
-
-    api_key, refresh_key = await load_credentials()
-    headers = {
-        'Authorization': f"Bearer {api_key}"
-    }
-    
-    return headers
-    
-
-async def prepare_hook():
-    """Проверяет, есть ли хук для текущего хоста, если нет, создает"""
-
-    headers = await prepare_headers()
-    host_url = settings.HOST_URL
-    webhook_url = settings.API_URL + "/webhooks"
-    webhook_post_data = {
-        'destination': host_url,
-        'settings': ['restore_lead', 'add_lead', 'status_lead']
-        # 'settings': ['restore_lead', 'add_lead', 'update_lead', 'status_lead']
-    }
-    params = {
-        "filter[destination]": host_url
-    }
-    
-    async with aiohttp.ClientSession() as session:
-        # async with session.get(webhook_url, headers=headers, params=params) as response:
-        #     response_data = await response.json()
-        #     logger.info('RESPONSE_DATA', response_data)
-        #     r = requests.get("https://devks.amocrm.ru/api/v4/webhooks", headers=headers, params=json.dumps(params))
-        #     logger.info(f"RESPONSE DATA 2 {r.json()}")
-        request_kwargs = {
-            'url': webhook_url,
-            'request_type': "GET",
-            'session': session,
-            'headers': headers,
-            'params': params
-        }
-        response_data = await request_or_retry(**request_kwargs)
-        
-        if host_url not in str(response_data):
-            await session.post(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
+        return await request_or_retry(**request_kwargs)
 
 
 async def delete_hook():
@@ -112,38 +78,9 @@ async def delete_hook():
     webhook_post_data = {
         'destination': host_url,
     }
-    # requests.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
     async with aiohttp.ClientSession() as session:
         await session.delete(webhook_url, headers=headers, data=json.dumps(webhook_post_data))
 
-
-async def get_pipeline_id(session: aiohttp.ClientSession):
-    headers = await prepare_headers()
-    url = settings.API_URL + "/leads/pipelines"
-    # logger.info(f"URL {url}")
-    async with session.get(url, headers=headers) as r:
-        response = await r.json()
-        for pipeline in response['_embedded']['pipelines']:
-            if pipeline['name'] == "Продажа":
-                settings.pipeline_id = pipeline['id']
-                return pipeline['id']
-
-
-async def get_success_stage_id(pipeline_id: int, session: aiohttp.ClientSession):
-    headers = await prepare_headers()
-    url = settings.API_URL + f"/leads/pipelines/{pipeline_id}"
-    async with session.get(url, headers=headers) as r:
-        response = await r.json()
-        for status in response['_embedded']['statuses']:
-            if status['name'] == 'Закрыто. Оплата получена':
-                settings.success_stage_id = status['id']
-
-
-async def prepare_pipeline_and_success_stage_id():
-    if settings.pipeline_id is None or settings.success_stage_id is None:
-        async with aiohttp.ClientSession() as session:
-            pipeline_id = await get_pipeline_id(session)
-            await get_success_stage_id(pipeline_id, session)
 
 async def get_leads(id: int, is_company: bool, session: aiohttp.ClientSession):
     """Получает информацию о контакте или компании и возвращает список лидов"""
@@ -176,7 +113,6 @@ async def check_lead(lead_link, session, months):
     
     await asyncio.sleep(1)
     headers = await prepare_headers()
-    # logger.info(f"Check: {lead_link}")
     request_kwargs = {
         'url': lead_link,
         'request_type': "GET",
@@ -185,15 +121,11 @@ async def check_lead(lead_link, session, months):
     }
 
     content = await request_or_retry(**request_kwargs)
-    # logger.info(f"CONTENT {content}")
     created_at = content['created_at']
     date = datetime.fromtimestamp(created_at)
     if datetime.now() - date > timedelta(days=int(months)*30):
         return None
-    # logger.info(f"CONTENT CUSTOM FIELDS {content}")
     try:
-        # equals = content['status_id'] == settings.success_stage_id
-        # logger.info(f"STATUS ID {content['status_id']}, SETTINGS {settings.success_stage_id}, EQUALS {equals}")
         if content['status_id'] == settings.success_stage_id:
             return content['price']
         else:
@@ -213,7 +145,6 @@ async def get_count_success_leads(id: int, is_company: bool, months: int, sessio
 
     tasks = []
     for lead in leads:
-        # logger.info(f"Lead {lead}")
         tasks.append(check_lead(lead['_links']['self']['href'], session, months))
 
     results = await asyncio.gather(*tasks)
@@ -230,6 +161,7 @@ async def get_json_from_hook(request: Request):
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
         return json_data
+
 
 def get_lead_id(data):
     lead_id = list(data['leads'].items())[0][1][0]['id']
@@ -260,9 +192,6 @@ async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession
     }
 
     content = await request_or_retry(**request_kwargs)
-
-    # async with session.get(lead_link, params=params, headers=headers) as response:
-    #     content = await response.json()
 
     contacts = content['_embedded']['contacts']
     for contact in contacts:
@@ -316,16 +245,9 @@ async def update_company_leads_sum_field(company_id, sum_of_leads: int, session:
     }
 
     result = await request_or_retry(**request_kwargs)
-    # logger.info(f"COMPANY UPDATER RESULT {result}")
-
-    # async with session.patch(url, headers=headers, data=json.dumps(fields_data)) as response:
-        # r = await response.json()
-        # logger.info(f"Response: {r}")
-    # logger.info(f"COMPANY UPDATED {company_id}, value {sum_of_leads}")
 
 async def update_contact_leads_amount_field(contact_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок для контакта"""
-    # logger.info(f"CONTACT UPDATER CALLED, VALUE {amount}")
     headers= await prepare_headers()
 
     url = settings.API_URL + f"/contacts/{contact_id}"
@@ -349,28 +271,16 @@ async def update_contact_leads_amount_field(contact_id, amount: int, session: ai
     }
 
     result = await request_or_retry(**request_kwargs)
-    # logger.info(f"CONTACT UPDATER RESULT {result}")
-
-    # async with session.patch(url, headers=headers, data=json.dumps(fields_data)) as response:
-        # r = await response.json()
-        # logger.info(f"Response: {r}")
-    # logger.info(f"CONTACT UPDATED {contact_id}, value {amount}")
 
 async def update_active_lead_main_contact_amount(lead_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок основного контакта лида"""
-    # logger.info(f"LEAD UPDATER CALLED, VALUE {amount}")
     lead_link = settings.API_URL + f"/leads/{lead_id}"
-
-    # check_lead_result = await check_lead(lead_link, session, months=6)
-    # logger.info(f"RESULT {check_lead_result}", )
-    # if check_lead_result == "Open Lead":
     headers= await prepare_headers()
     fields_data = {
         "custom_fields_values": [{
             'field_id': settings.LEADS_FIELD_ID,
             'values': [
                 {
-                    # "value": 100
                     "value": amount
                 }
             ]
@@ -386,11 +296,6 @@ async def update_active_lead_main_contact_amount(lead_id, amount: int, session: 
         'add': "Called from lead updater"
     }
     result = await request_or_retry(**request_kwargs)
-    # logger.info(f"LEAD UPDATER RESULT {result}")
-    # async with session.patch(lead_link, headers=headers, data=json.dumps(fields_data)) as response:
-    #     r = await response.json()
-        # logger.info(f"Response: {r}")
-    # logger.info(f"OPEN LEAD UPDATED {lead_id}, value {amount}")
 
 
 async def handle_hook(data, session: aiohttp.ClientSession):
@@ -400,7 +305,6 @@ async def handle_hook(data, session: aiohttp.ClientSession):
 
     main_contact_id, company_id = await get_lead_main_contact_and_company(data, session)
     main_contact_results = await get_main_contacts_success_leads(main_contact_id, session)
-    # print(main_contact_results)
     if company_id is not None:
         company_results = await get_company_success_leads(company_id, session)
 
@@ -408,8 +312,6 @@ async def handle_hook(data, session: aiohttp.ClientSession):
             company_results.remove("Open Lead")
 
         company_results_sum = sum(company_results)
-        # logger.info(f"COMPANY RESULTS: {company_results}")
-        # logger.info(f"MAIN_CONTACT RESULTS: {main_contact_results}")
         await update_company_leads_sum_field(company_id, company_results_sum, session)
 
     while "Open Lead" in main_contact_results:

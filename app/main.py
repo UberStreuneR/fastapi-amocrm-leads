@@ -6,12 +6,12 @@ from fastapi.openapi.docs import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
-from utils import (prepare_hook,
+from utils import (
                    get_json_from_hook,
-                   delete_hook,
                    handle_hook,
                    get_count_success_leads,
-                   prepare_pipeline_and_success_stage_id)
+                   )
+from prepare import prepare_hook, prepare_pipeline_and_success_stage_id
 from auth import set_token
 from settings import settings
 from logger import logger
