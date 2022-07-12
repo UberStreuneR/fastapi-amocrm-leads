@@ -5,7 +5,7 @@ import json
 from fastapi import Request
 from exceptions import HTTP401Exception
 from settings import settings
-from auth import load_credentials, update_token
+from auth import update_token
 from querystring_parser import parser
 from prepare import prepare_headers
 from request_template import request_or_retry

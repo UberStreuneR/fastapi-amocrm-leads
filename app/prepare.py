@@ -1,13 +1,12 @@
 import aiohttp
 import json
-from utils import load_credentials
 from request_template import request_or_retry
 from settings import settings
 from logger import logger
 
 async def prepare_headers():
 
-    api_key, refresh_key = await load_credentials()
+    api_key = settings.API_KEY
     headers = {
         'Authorization': f"Bearer {api_key}"
     }
