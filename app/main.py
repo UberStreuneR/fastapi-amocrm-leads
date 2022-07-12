@@ -10,6 +10,7 @@ from utils import (
                    get_json_from_hook,
                    handle_hook,
                    get_count_success_leads,
+                   delete_hook
                    )
 from prepare import prepare_hook, prepare_pipeline_and_success_stage_id
 from auth import set_token
