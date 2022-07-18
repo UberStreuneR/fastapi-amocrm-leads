@@ -1,0 +1,33 @@
+[data-content-tab] {
+  display: none;
+}
+#work_area {
+  background-color: white;
+  padding-bottom: 1rem;
+}
+
+#buttons button {
+  border: 0;
+  background-color: white;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+#buttons button.active {
+  font-weight: bold;
+}
+
+#buttons button.active::after {
+  content: "";
+  display: block;
+  height: 2px;
+  width: 100%;
+  margin-top: 5px;
+  background-color: #4b79bb;
+}
+
+hr {
+  padding: 1px 0px;
+  background-color: #e0e0e0;
+  margin: 1rem 0;
+  border: none;
+}

@@ -1,0 +1,67 @@
+#status-tab.active {
+  display: block;
+}
+
+#status-tab table {
+  border-spacing: 0.5rem 0.3rem;
+  border-collapse: unset;
+}
+
+#status-tab table td {
+  vertical-align: bottom;
+}
+
+#status-tab #rule input {
+  width: 8rem;
+}
+
+#delete-row-icon {
+  background-image: url("./images/cross.jpg");
+  background-size: cover;
+  background-repeat: no-repeat;
+  display: block;
+  cursor: pointer;
+  height: 37px;
+  width: 40px;
+}
+
+#delete-row-div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+#status-tab-buttons {
+  display: flex;
+  flex-direction: column;
+}
+
+#status-tab-buttons button {
+  padding: 1rem;
+  border-radius: 4px;
+  width: 11rem;
+  height: 40px;
+  margin-top: 1rem;
+  margin-left: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+#status-tab-buttons #addRow {
+  background-color: white;
+  font-weight: bold;
+  border: 1px solid lightgrey;
+}
+
+#status-tab-buttons #save {
+  background-color: #4b79bb;
+  color: white;
+}
+
+.control--select--list-opened {
+  min-width: 100%;
+  width: auto;
+}

@@ -9,7 +9,10 @@ async def request_or_retry(url, request_type, session, headers=None, params=None
         async with session.get(url, headers=headers, params=params) as request:
             try:
                 response = await request.json()
-                return response
+                if request.status == 401:
+                    pass
+                else:
+                    return response
             except aiohttp.client_exceptions.ContentTypeError as e:
                 logger.exception(e)
 
@@ -53,6 +56,7 @@ async def request_or_retry(url, request_type, session, headers=None, params=None
         # logger.info(f"AWAITING {seconds + 5} seconds\nRESPONSE {await request.text()}")
         await asyncio.sleep(seconds + 5)
         return await request_or_retry(**request_kwargs)
-    elif request.status == 401:    
+    elif request.status == 401:
+        logger.info("STATUS 401")
         await update_token()
         return await request_or_retry(**request_kwargs)

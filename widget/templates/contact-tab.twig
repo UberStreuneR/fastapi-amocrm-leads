@@ -1,0 +1,24 @@
+<div>
+    <span>Кол-во месяцев:</span>
+    {{ include_control('input', {
+    name: 'contact_input_months',
+    }) }}
+</div>
+<div>
+    <span>Поле контакта:</span>
+    {{ include_control('select', {
+        name: 'contact_select_field',
+        items: contactFieldOptions
+    }) }}
+</div>
+<div>
+    <span>Поле сделки:</span>
+    {{ include_control('select', {
+        name: 'contact_select_lead_field',
+        items: contactLeadFieldOptions
+    }) }}
+</div>
+<div id="contact-tab-buttons">
+    <button id="save">Сохранить</button>
+    <button id="runCheck">Выполнить проверку</button>
+</div>

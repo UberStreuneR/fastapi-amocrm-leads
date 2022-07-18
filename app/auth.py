@@ -4,6 +4,7 @@ from settings import settings
 import os
 import requests
 from json_utils import prettify_json
+from logger import logger
 
 async def make_auth_request(auth_endpoint, data):
     """Производит запрос на получение либо обновление токена"""
@@ -99,7 +100,7 @@ async def update_token():
 
     REFRESH_KEY = settings.REFRESH_KEY
     # AUTH_KEY, REFRESH_KEY = await load_credentials()
-
+    logger.info(f"REFRESH KEY\n{REFRESH_KEY}")
     data = {
         'client_id': INTEGRATION_ID,
         'client_secret': SECRET_KEY,

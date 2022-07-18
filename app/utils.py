@@ -2,7 +2,7 @@ import aiohttp, aiofiles
 import asyncio
 from datetime import datetime, timedelta
 import json
-from fastapi import Request
+from fastapi import Request, Depends
 from exceptions import HTTP401Exception
 from settings import settings
 from auth import update_token
@@ -281,3 +281,38 @@ async def handle_hook(data, session: aiohttp.ClientSession):
 
     lead_id = get_lead_id(data)
     await update_active_lead_main_contact_amount(lead_id, len(main_contact_results), session)
+
+
+def get_value_and_label_from_list(items: list):
+    result = []
+    for item in items:
+        id_and_name = {"value": str(item['id']), "label": item['name']}
+        result.append(id_and_name)
+    return result
+
+async def return_entity_fields():
+    headers = await prepare_headers()
+    data = {}
+    
+    async with aiohttp.ClientSession() as session:
+        request_kwargs = {
+            'url': settings.API_URL + "/companies/custom_fields",
+            'request_type': 'GET',
+            'session': session,
+            'headers': headers,
+        }
+        company_fields = await request_or_retry(**request_kwargs)
+        company_fields = get_value_and_label_from_list(company_fields['_embedded']['custom_fields'])
+        data.update({"companyFields": company_fields})
+
+        request_kwargs['url'] = settings.API_URL + "/contacts/custom_fields"
+        contact_fields = await request_or_retry(**request_kwargs)
+        contact_fields = get_value_and_label_from_list(contact_fields['_embedded']['custom_fields'])
+        data.update({"contactFields": contact_fields})
+
+        request_kwargs['url'] = settings.API_URL + "/leads/custom_fields"
+        lead_fields = await request_or_retry(**request_kwargs)
+        lead_fields = get_value_and_label_from_list(lead_fields['_embedded']['custom_fields'])
+        data.update({"leadFields": lead_fields})
+
+        return data

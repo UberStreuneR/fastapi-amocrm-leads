@@ -1,0 +1,66 @@
+<div>
+<table>
+    <thead>
+        <tr>
+            <td>Статус</td>
+            <td>Тип зависимости</td>
+            <td>Тип сущности</td>
+            <td>Поле</td>
+            <td>Правило</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody id="status-tbody">
+        <tr>
+            <td>
+                {{ include_control('input', {
+                    name: 'status_input',
+                }) }}
+            </td>
+            <td>
+                {{ include_control('select', {
+                    name: 'status_select_dependency_type',
+                    items: statusDependencyTypeOptions
+                }) }}
+            </td>
+            <td>
+                {{ include_control('select', {
+                    name: 'status_select_entity_type',
+                    button_class_name: "entity-type-button",
+                    id: 'entity-type',
+                    items: statusEntityTypeOptions
+                }) }}
+            </td>
+            <td id="status-contact-field">
+                {{ include_control('select', {
+                    name: 'status_select_entity_contact_field',
+                    items: statusContactFieldOptions
+                }) }}
+            </td>
+            <td id="status-company-field" style="display: none;">
+                {{ include_control('select', {
+                    name: 'status_select_entity_company_field',
+                    items: statusCompanyFieldOptions
+                }) }}
+            </td>
+            <td>
+                <div id="rule">
+                    {{ include_control('input', {
+                        name: 'status_input_from',
+                    }) }}
+                    {{ include_control('input', {
+                        name: 'status_input_to',
+                    }) }}
+                </div>
+            </td>
+            <td id="delete-row">
+                <span id="delete-row-icon"></span>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<div id="status-tab-buttons">
+    <button id="addRow">Добавить значение</button>
+    <button id="save">Сохранить</button>
+</div>
+</div>

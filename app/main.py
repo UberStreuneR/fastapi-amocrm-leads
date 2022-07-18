@@ -1,23 +1,33 @@
 from cmath import pi
 import aiohttp, aiofiles
-from fastapi import FastAPI, HTTPException, status, Request
+from fastapi import FastAPI, HTTPException, status, Request, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import (
     get_swagger_ui_html,
     get_swagger_ui_oauth2_redirect_html,
 )
+from starlette.middleware.cors import CORSMiddleware
 from utils import (
                    get_json_from_hook,
                    handle_hook,
                    get_count_success_leads,
-                   delete_hook
+                   delete_hook,
+                   return_entity_fields
                    )
 from prepare import prepare_hook, prepare_pipeline_and_success_stage_id
+from deps import get_auth_data
 from auth import set_token
 from settings import settings
 from logger import logger
 
 app = FastAPI(docs_url=None, redoc_url=None)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 """Для отображения docs, в силу того что дефолтный cdn не подгружается"""
@@ -88,5 +98,12 @@ async def retrieve_settings():
 @app.get("/create-hook")
 async def create_webhook():
     await prepare_hook()
+
+@app.get("/widget-request")
+async def handle_widget_request(auth_data: dict = Depends(get_auth_data)):
+    data = await return_entity_fields()
+    logger.info(f"DATA\n{data}")
+    return data
+
 
     

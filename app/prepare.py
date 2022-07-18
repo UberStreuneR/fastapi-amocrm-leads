@@ -47,12 +47,20 @@ async def prepare_hook():
 async def get_pipeline_id(session: aiohttp.ClientSession):
     headers = await prepare_headers()
     url = settings.API_URL + "/leads/pipelines"
-    async with session.get(url, headers=headers) as r:
-        response = await r.json()
-        for pipeline in response['_embedded']['pipelines']:
-            if pipeline['name'] == "Продажа":
-                settings.pipeline_id = pipeline['id']
-                return pipeline['id']
+    request_kwargs = {
+        'url': url,
+        'request_type': "GET",
+        'headers': headers,
+        'session': session
+    }
+    # async with session.get(url, headers=headers) as r:
+    response = await request_or_retry(**request_kwargs)
+    logger.info(response)
+    # logger.info(r.status)
+    for pipeline in response['_embedded']['pipelines']:
+        if pipeline['name'] == "Продажа":
+            settings.pipeline_id = pipeline['id']
+            return pipeline['id']
 
 
 async def get_success_stage_id(pipeline_id: int, session: aiohttp.ClientSession):

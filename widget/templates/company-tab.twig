@@ -1,0 +1,24 @@
+<div>
+    <span>Кол-во месяцев:</span>
+    {{ include_control('input', {
+        name: 'company_input_months',
+    }) }}
+</div>
+<div>
+    <span>Поле компании</span>
+    {{ include_control('select', {
+        name: 'company_select_field',
+        items: companyFieldOptions
+    }) }}
+</div>
+<div>
+    <span>Поле сделки</span>
+    {{ include_control('select', {
+        name: 'company_select_lead_field',
+        items: companyLeadFieldOptions
+    }) }}
+</div>
+<div id="company-tab-buttons">
+    <button id="save">Сохранить</button>
+    <button id="runCheck">Выполнить проверку</button>
+</div>
