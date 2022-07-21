@@ -1,29 +1,29 @@
 var data = {
-  // companyFields: [
-  //   { value: "1234232", label: "Email" },
-  //   { value: "3334322", label: "Web" },
-  //   { value: "3234562", label: "Адрес" },
-  //   { value: "4234", label: "Примечание" },
-  //   { value: "23412", label: "Почтовый адрес" },
-  //   { value: "34533", label: "Последняя оплата" },
-  //   { value: "23452345", label: "Уровень компании" },
-  //   { value: "3433347", label: "Сумма оплат за 6 мес." },
-  // ],
-  // leadFields: [
-  //   { value: "1", label: "Сообщ. в Телеграм" },
-  //   { value: "2", label: "Кол-во успешных сделок за 6 мес." },
-  //   { value: "3", label: "на дату" },
-  //   { value: "4", label: "Этап 'Завершены работы'" },
-  //   { value: "5", label: "Сделка для возврата залога?" },
-  //   { value: "6", label: "Воронка Первичное этап Закрыто" },
-  // ],
-  // contactFields: [
-  //   { value: "1", label: "Примечание" },
-  //   { value: "2", label: "Регион" },
-  //   { value: "3", label: "Уровень контакта" },
-  //   { value: "4", label: "Кол-во успешных сделок за 6 мес." },
-  //   { value: "5", label: "roistat" },
-  // ],
+  //   // companyFields: [
+  //   //   { value: "1234232", label: "Email" },
+  //   //   { value: "3334322", label: "Web" },
+  //   //   { value: "3234562", label: "Адрес" },
+  //   //   { value: "4234", label: "Примечание" },
+  //   //   { value: "23412", label: "Почтовый адрес" },
+  //   //   { value: "34533", label: "Последняя оплата" },
+  //   //   { value: "23452345", label: "Уровень компании" },
+  //   //   { value: "3433347", label: "Сумма оплат за 6 мес." },
+  //   // ],
+  //   // leadFields: [
+  //   //   { value: "1", label: "Сообщ. в Телеграм" },
+  //   //   { value: "2", label: "Кол-во успешных сделок за 6 мес." },
+  //   //   { value: "3", label: "на дату" },
+  //   //   { value: "4", label: "Этап 'Завершены работы'" },
+  //   //   { value: "5", label: "Сделка для возврата залога?" },
+  //   //   { value: "6", label: "Воронка Первичное этап Закрыто" },
+  //   // ],
+  //   // contactFields: [
+  //   //   { value: "1", label: "Примечание" },
+  //   //   { value: "2", label: "Регион" },
+  //   //   { value: "3", label: "Уровень контакта" },
+  //   //   { value: "4", label: "Кол-во успешных сделок за 6 мес." },
+  //   //   { value: "5", label: "roistat" },
+  //   // ],
   dependencyTypes: [
     { value: "quantity", label: "От количества" },
     { value: "sum", label: "От суммы" },
@@ -49,8 +49,9 @@ define(["./templates.js"], function (templatesRenderer) {
     }
 
     makeRequest({ method, path, data, successful, complete } = {}) {
+      // alert(`${this.widget.get_settings().serverURL}${path}`);
       this.widget.$authorizedAjax({
-        url: `${this.widget.get_settings().serverURL}/${path}`,
+        url: `${this.widget.get_settings().serverURL}${path}`,
         type: method,
         data: JSON.stringify(data),
         dataType: "json",
@@ -135,9 +136,6 @@ define(["./templates.js"], function (templatesRenderer) {
             "entity-type-button"
           )
         ) {
-          var allControlButtons = tbody.querySelectorAll(
-            "button.entity-type-button"
-          );
           var rows = Array.from(tbody.querySelectorAll("tr"));
           var row = rows.find(row => row.contains(e.target));
           var index = rows.indexOf(row);
@@ -158,6 +156,20 @@ define(["./templates.js"], function (templatesRenderer) {
       });
     }
 
+    addTestRequestButtonListener() {
+      var testBtn = document.querySelector("#test-request");
+      testBtn.addEventListener("click", () => {
+        this.makeRequest({
+          method: "get",
+          path: "settings/",
+          successful: response => {
+            alert(JSON.stringify(response));
+            console.log(response);
+          },
+        });
+      });
+    }
+
     addTabButtonsListeners() {
       var tabBtns = document.querySelectorAll("[data-content-selector]");
       var tabs = document.querySelectorAll("[data-content-tab]");
@@ -174,8 +186,172 @@ define(["./templates.js"], function (templatesRenderer) {
       });
     }
 
+    addContactTabButtonListeners() {
+      var saveButton = document.querySelector("#contact-tab #save");
+      //TODO: runCheck function
+      var runCheck = document.querySelector("#contact-tab #runCheck");
+      var contactMonths = document.querySelector(
+        "#contact-tab input[name=contact_input_months]"
+      );
+      var contactSelect = document.querySelector(
+        "#contact-tab input[name=contact_select_field]"
+      );
+      var contactSelectLead = document.querySelector(
+        "#contact-tab input[name=contact_select_lead_field]"
+      );
+      saveButton.addEventListener("click", () => {
+        var months = contactMonths.value;
+        var contactField = contactSelect.value;
+        var leadField = contactSelectLead.value;
+        // alert(months + " " + contactField + " " + leadField);
+        if (!Number.isInteger(parseFloat(months))) {
+          AMOCRM.notifications.show_message({
+            header: this.widget.langs.widget.name,
+            text: "Кол-во мес. должно быть целым числом",
+          });
+          return;
+        }
+        this.makeRequest({
+          method: "post",
+          path: "settings/contact",
+          data: {
+            months: parseInt(months),
+            lead_field_id: leadField,
+            contact_field_id: contactField,
+          },
+          successful: response => {
+            // alert(JSON.stringify(response));
+            // console.log(response);
+          },
+        });
+      });
+    }
+
+    addCompanyTabButtonListeners() {
+      var saveButton = document.querySelector("#company-tab #save");
+      //TODO: runCheck function
+      var runCheck = document.querySelector("#company-tab #runCheck");
+      var companyMonths = document.querySelector(
+        "#company-tab input[name=company_input_months]"
+      );
+      var companySelect = document.querySelector(
+        "#company-tab input[name=company_select_field]"
+      );
+      var companySelectLead = document.querySelector(
+        "#company-tab input[name=company_select_lead_field]"
+      );
+      saveButton.addEventListener("click", () => {
+        var months = companyMonths.value;
+        var companyField = companySelect.value;
+        var leadField = companySelectLead.value;
+        // alert(months + " " + companyField + " " + leadField);
+        if (!Number.isInteger(parseFloat(months))) {
+          AMOCRM.notifications.show_message({
+            header: this.widget.langs.widget.name,
+            text: "Кол-во мес. должно быть целым числом",
+          });
+          return;
+        }
+        this.makeRequest({
+          method: "post",
+          path: "settings/company",
+          data: {
+            months: parseInt(months),
+            lead_field_id: leadField,
+            company_field_id: companyField,
+          },
+          successful: response => {
+            // alert(JSON.stringify(response));
+            // console.log(response);
+          },
+        });
+      });
+    }
+
+    addStatusTabButtonListeners() {
+      const { dependencyItems, entityItems, companyItems, contactItems } =
+        this.returnItems();
+      var addRowBtn = document.querySelector("#addRow");
+      var saveBtn = document.querySelector("#status-tab #save");
+      addRowBtn.addEventListener("click", () => {
+        this.renderTableRow(
+          dependencyItems,
+          entityItems,
+          companyItems,
+          contactItems
+        );
+      });
+      saveBtn.addEventListener("click", () => {
+        var rows = document.querySelectorAll("#status-tab tbody tr");
+        var rowsArray = Array.from(rows);
+        var result = rowsArray.map(row => {
+          var status = row.querySelector("input[name=status_input]");
+          var depType = row.querySelector(
+            "input[name=status_select_dependency_type]"
+          );
+          var entityType = row.querySelector(
+            "input[name=status_select_entity_type]"
+          );
+          var entityField = row.querySelector(
+            `input[name=status_select_entity_${entityType.value}_field]`
+          );
+          var fromAmount = row.querySelector("input[name=status_input_from]");
+          var toAmount = row.querySelector("input[name=status_input_to]");
+          if (!status.value) {
+            AMOCRM.notifications.show_message({
+              header: this.widget.langs.widget.name,
+              text: "Поле статус не должно быть пустым",
+            });
+            return null;
+          }
+          if (!fromAmount.value) {
+            AMOCRM.notifications.show_message({
+              header: this.widget.langs.widget.name,
+              text: 'Правило "от" не должно быть пустым',
+            });
+            return null;
+          }
+          if (!toAmount.value) {
+            AMOCRM.notifications.show_message({
+              header: this.widget.langs.widget.name,
+              text: 'Правило "до" не должно быть пустым',
+            });
+            return null;
+          }
+          if (!(parseInt(fromAmount.value) <= parseInt(toAmount.value))) {
+            AMOCRM.notifications.show_message({
+              header: this.widget.langs.widget.name,
+              text: 'Значение "от" больше значения "до"',
+            });
+            return null;
+          }
+          return {
+            status: status.value,
+            dependency_type: depType.value,
+            entity_type: entityType.value,
+            field_id: entityField.value,
+            from_amount: fromAmount.value,
+            to_amount: toAmount.value,
+          };
+        });
+
+        if (result.indexOf(null) == -1) {
+          this.makeRequest({
+            method: "post",
+            path: "settings/status",
+            data: result,
+            successful: response => {
+              alert(JSON.stringify(response));
+              console.log(response);
+            },
+          });
+        }
+      });
+      this.addDeleteButtonListeners();
+      this.addControlButtonListeners();
+    }
+
     renderStatusTab(callback) {
-      // const statusTab = document.querySelector("#status-tab");
       const { dependencyItems, entityItems, companyItems, contactItems } =
         this.returnItems();
       var statusTab = $("#status-tab");
@@ -194,7 +370,7 @@ define(["./templates.js"], function (templatesRenderer) {
         });
     }
 
-    renderTableRow(callback) {
+    renderTableRow() {
       var tableBody = $("#status-tbody");
       const { dependencyItems, entityItems, companyItems, contactItems } =
         this.returnItems();
@@ -209,11 +385,10 @@ define(["./templates.js"], function (templatesRenderer) {
         })
         .then(result => {
           tableBody.append($(result));
-          // callback();
         });
     }
 
-    renderContactTab() {
+    renderContactTab(callback) {
       const { contactItems, leadItems } = this.returnItems();
       const contactTab = $("#contact-tab");
       this.getTemplate("contact-tab")
@@ -223,10 +398,13 @@ define(["./templates.js"], function (templatesRenderer) {
             contactLeadFieldOptions: leadItems,
           })
         )
-        .then(result => contactTab.append($(result)));
+        .then(result => {
+          contactTab.append($(result));
+          callback();
+        });
     }
 
-    renderCompanyTab() {
+    renderCompanyTab(callback) {
       const { companyItems, leadItems } = this.returnItems();
       const companyTab = $("#company-tab");
       this.getTemplate("company-tab")
@@ -238,7 +416,10 @@ define(["./templates.js"], function (templatesRenderer) {
             })
           )
         )
-        .then(result => companyTab.append(result));
+        .then(result => {
+          companyTab.append(result);
+          callback();
+        });
     }
 
     renderSkeleton(callback) {
@@ -252,30 +433,16 @@ define(["./templates.js"], function (templatesRenderer) {
     renderPage() {
       this.makeRequest({
         method: "get",
-        path: "widget-request",
+        path: "settings/get-custom-fields",
         successful: response => {
           this.companyFields = response["companyFields"];
           this.contactFields = response["contactFields"];
           this.leadFields = response["leadFields"];
           this.renderSkeleton(() => {
             this.addTabButtonsListeners();
-            const { companyItems, contactItems, dependencyItems, entityItems } =
-              this.returnItems();
-            this.renderContactTab();
-            this.renderStatusTab(() => {
-              var addRowBtn = document.querySelector("#addRow");
-              addRowBtn.addEventListener("click", () => {
-                this.renderTableRow(
-                  dependencyItems,
-                  entityItems,
-                  companyItems,
-                  contactItems
-                );
-              });
-              this.addDeleteButtonListeners();
-              this.addControlButtonListeners();
-            });
-            this.renderCompanyTab();
+            this.renderContactTab(() => this.addContactTabButtonListeners());
+            this.renderCompanyTab(() => this.addCompanyTabButtonListeners());
+            this.renderStatusTab(() => this.addStatusTabButtonListeners());
           });
         },
       });
@@ -289,7 +456,6 @@ define(["./templates.js"], function (templatesRenderer) {
   return function () {
     let self = this;
     let widget = new Widget(this, templatesRenderer(this));
-    // var getTemplate = templatesRenderer(this);
     this.callbacks = {
       init: function () {
         var settings = self.get_settings();
@@ -303,13 +469,14 @@ define(["./templates.js"], function (templatesRenderer) {
           $("head").append(
             '<link href="' +
               settings.path +
-              "/" +
+              "/styles/" +
               style +
               "?v=" +
               settings.version +
               '" type="text/css" rel="stylesheet">'
           );
         });
+
         return true;
       },
       advancedSettings: function () {

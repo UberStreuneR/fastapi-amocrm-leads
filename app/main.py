@@ -1,5 +1,6 @@
 from cmath import pi
-import aiohttp, aiofiles
+import aiohttp
+import aiofiles
 from fastapi import FastAPI, HTTPException, status, Request, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import (
@@ -8,12 +9,12 @@ from fastapi.openapi.docs import (
 )
 from starlette.middleware.cors import CORSMiddleware
 from utils import (
-                   get_json_from_hook,
-                   handle_hook,
-                   get_count_success_leads,
-                   delete_hook,
-                   return_entity_fields
-                   )
+    get_json_from_hook,
+    handle_hook,
+    get_count_success_leads,
+    delete_hook,
+    return_entity_fields
+)
 from prepare import prepare_hook, prepare_pipeline_and_success_stage_id
 from deps import get_auth_data
 from auth import set_token
@@ -32,6 +33,7 @@ app.add_middleware(
 
 """Для отображения docs, в силу того что дефолтный cdn не подгружается"""
 app.mount("/my_static", StaticFiles(directory="static"), name="static")
+
 
 @app.get("/docs", include_in_schema=False)
 async def custom_swagger_ui_html():
@@ -56,7 +58,7 @@ async def on_startup():
     await prepare_pipeline_and_success_stage_id()
 
 
-#TODO: Функция удаляет хук как должно, проверено. Не работает shutdown event для FastAPI в Докере
+# TODO: Функция удаляет хук как должно, проверено. Не работает shutdown event для FastAPI в Докере
 @app.on_event("shutdown")
 async def on_shutdown():
     await delete_hook()
@@ -69,11 +71,13 @@ async def successful_leads(id: int, is_company: bool, months):
         try:
             results = await get_count_success_leads(id, is_company, months, session)
         except TypeError:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Entity with such parameters was not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                                detail="Entity with such parameters was not found")
         logger.info(f"Result {results}")
         while "Open Lead" in results:
             results.remove("Open Lead")
         return {f"amount": len(results), "sum": sum(results), "id": id, "is_company": is_company}
+
 
 @app.post("/")
 async def receive_hook(request: Request):
@@ -84,10 +88,12 @@ async def receive_hook(request: Request):
         await handle_hook(data, session)
         return {"result": "Success"}
 
+
 @app.get("/delete-hook")
 async def request_delete_hook():
     await delete_hook()
     return {"result": "Success"}
+
 
 @app.get("/retrieve-settings")
 async def retrieve_settings():
@@ -95,15 +101,15 @@ async def retrieve_settings():
     success_stage_id = settings.success_stage_id
     return {"pipeline": pipeline_id, "success_stage": success_stage_id}
 
+
 @app.get("/create-hook")
 async def create_webhook():
     await prepare_hook()
+
 
 @app.get("/widget-request")
 async def handle_widget_request(auth_data: dict = Depends(get_auth_data)):
     data = await return_entity_fields()
     logger.info(f"DATA\n{data}")
+    logger.info(f"AUTH DATA\n{auth_data}")
     return data
-
-
-    

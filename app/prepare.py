@@ -4,15 +4,16 @@ from request_template import request_or_retry
 from settings import settings
 from logger import logger
 
+
 async def prepare_headers():
 
     api_key = settings.API_KEY
     headers = {
         'Authorization': f"Bearer {api_key}"
     }
-    
+
     return headers
-    
+
 
 async def prepare_hook():
     """Проверяет, есть ли хук для текущего хоста, если нет, создает"""
@@ -29,7 +30,7 @@ async def prepare_hook():
     params = {
         "filter[destination]": host_url
     }
-    
+
     async with aiohttp.ClientSession() as session:
         request_kwargs = {
             'url': webhook_url,
@@ -39,7 +40,7 @@ async def prepare_hook():
             'params': params
         }
         response_data = await request_or_retry(**request_kwargs)
-        
+
         if host_url not in str(response_data):
             result = await request_or_retry(url=webhook_url, request_type="POST", session=session, headers=headers, data=webhook_post_data)
 
@@ -55,7 +56,7 @@ async def get_pipeline_id(session: aiohttp.ClientSession):
     }
     # async with session.get(url, headers=headers) as r:
     response = await request_or_retry(**request_kwargs)
-    logger.info(response)
+    # logger.info(response)
     # logger.info(r.status)
     for pipeline in response['_embedded']['pipelines']:
         if pipeline['name'] == "Продажа":

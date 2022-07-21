@@ -1,4 +1,5 @@
-import aiohttp, aiofiles
+import aiohttp
+import aiofiles
 import asyncio
 from datetime import datetime, timedelta
 import json
@@ -53,7 +54,7 @@ async def get_leads(id: int, is_company: bool, session: aiohttp.ClientSession):
 async def check_lead(lead_link, session, months):
     """Делает запрос по ссылке лида, проверяет, что создан не позже 6 месяцев назад.
        Возвращает сумму оплаты лида, если тот оплачен"""
-    
+
     await asyncio.sleep(1)
     headers = await prepare_headers()
     request_kwargs = {
@@ -88,7 +89,8 @@ async def get_count_success_leads(id: int, is_company: bool, months: int, sessio
 
     tasks = []
     for lead in leads:
-        tasks.append(check_lead(lead['_links']['self']['href'], session, months))
+        tasks.append(check_lead(
+            lead['_links']['self']['href'], session, months))
 
     results = await asyncio.gather(*tasks)
 
@@ -113,7 +115,6 @@ def get_lead_id(data):
 
 async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession):
     """Возвращает id основного контакта для лида и его компании, если она есть"""
-
 
     params = {
         'with': 'contacts'
@@ -161,7 +162,7 @@ async def get_lead_main_contact_and_company(data, session: aiohttp.ClientSession
     #     return main_contact, company['id']
     except IndexError:
         return main_contact, None
-        
+
 
 async def get_main_contacts_success_leads(contact_id, session: aiohttp.ClientSession):
     """Возвращает список успешных и открытых лидов для контакта"""
@@ -169,17 +170,18 @@ async def get_main_contacts_success_leads(contact_id, session: aiohttp.ClientSes
     results = await get_count_success_leads(contact_id, is_company=False, months=6, session=session)
     return results
 
+
 async def get_company_success_leads(company_id, session: aiohttp.ClientSession):
     """Возвращает список успешных и открытых лидов для компании"""
 
     results = await get_count_success_leads(company_id, is_company=True, months=6, session=session)
     return results
 
+
 async def update_company_leads_sum_field(company_id, sum_of_leads: int, session: aiohttp.ClientSession):
     """Обновляет поле суммы сделок для компании"""
 
-
-    headers= await prepare_headers()
+    headers = await prepare_headers()
 
     url = settings.API_URL + f"/companies/{company_id}"
     fields_data = {
@@ -203,9 +205,10 @@ async def update_company_leads_sum_field(company_id, sum_of_leads: int, session:
 
     result = await request_or_retry(**request_kwargs)
 
+
 async def update_contact_leads_amount_field(contact_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок для контакта"""
-    headers= await prepare_headers()
+    headers = await prepare_headers()
 
     url = settings.API_URL + f"/contacts/{contact_id}"
     fields_data = {
@@ -229,13 +232,14 @@ async def update_contact_leads_amount_field(contact_id, amount: int, session: ai
 
     result = await request_or_retry(**request_kwargs)
 
+
 async def update_active_lead_main_contact_amount(lead_id, amount: int, session: aiohttp.ClientSession):
     """Обновляет поле количества успешных сделок основного контакта лида"""
     lead_link = settings.API_URL + f"/leads/{lead_id}"
     lead_result = await check_lead(lead_link=lead_link, session=session, months=6)
     if lead_result != "Open Lead":
         return
-    headers= await prepare_headers()
+    headers = await prepare_headers()
     fields_data = {
         "custom_fields_values": [{
             'field_id': settings.LEADS_FIELD_ID,
@@ -278,7 +282,6 @@ async def handle_hook(data, session: aiohttp.ClientSession):
         main_contact_results.remove("Open Lead")
     await update_contact_leads_amount_field(main_contact_id, len(main_contact_results), session)
 
-
     lead_id = get_lead_id(data)
     await update_active_lead_main_contact_amount(lead_id, len(main_contact_results), session)
 
@@ -290,10 +293,11 @@ def get_value_and_label_from_list(items: list):
         result.append(id_and_name)
     return result
 
+
 async def return_entity_fields():
     headers = await prepare_headers()
     data = {}
-    
+
     async with aiohttp.ClientSession() as session:
         request_kwargs = {
             'url': settings.API_URL + "/companies/custom_fields",
@@ -302,17 +306,20 @@ async def return_entity_fields():
             'headers': headers,
         }
         company_fields = await request_or_retry(**request_kwargs)
-        company_fields = get_value_and_label_from_list(company_fields['_embedded']['custom_fields'])
+        company_fields = get_value_and_label_from_list(
+            company_fields['_embedded']['custom_fields'])
         data.update({"companyFields": company_fields})
 
         request_kwargs['url'] = settings.API_URL + "/contacts/custom_fields"
         contact_fields = await request_or_retry(**request_kwargs)
-        contact_fields = get_value_and_label_from_list(contact_fields['_embedded']['custom_fields'])
+        contact_fields = get_value_and_label_from_list(
+            contact_fields['_embedded']['custom_fields'])
         data.update({"contactFields": contact_fields})
 
         request_kwargs['url'] = settings.API_URL + "/leads/custom_fields"
         lead_fields = await request_or_retry(**request_kwargs)
-        lead_fields = get_value_and_label_from_list(lead_fields['_embedded']['custom_fields'])
+        lead_fields = get_value_and_label_from_list(
+            lead_fields['_embedded']['custom_fields'])
         data.update({"leadFields": lead_fields})
 
         return data

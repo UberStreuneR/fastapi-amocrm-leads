@@ -16,7 +16,7 @@
 }
 
 #delete-row-icon {
-  background-image: url("./images/cross.jpg");
+  background-image: url("../images/cross.jpg");
   background-size: cover;
   background-repeat: no-repeat;
   display: block;

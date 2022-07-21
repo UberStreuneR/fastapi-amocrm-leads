@@ -3,3 +3,4 @@ env
 Makefile
 creds.json
 test.*
+/data/

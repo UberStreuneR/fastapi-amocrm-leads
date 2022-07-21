@@ -1,0 +1,23 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: app
+    command: sh -c "cd app && uvicorn main:app --reload --host 0.0.0.0 --port 80"
+    volumes:
+      - ./app_ref/:/code/app
+    ports:
+      - 8000:80
+    env_file:
+      - ./.ref.env
+
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      POSTGRES_USER: docker
+      POSTGRES_PASSWORD: docker
+      POSTGRES_DB: database
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
