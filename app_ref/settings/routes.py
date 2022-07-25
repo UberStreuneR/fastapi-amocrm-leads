@@ -9,14 +9,18 @@ from settings import services
 from integrations.deps import get_session
 from sqlmodel import Session
 from typing import List
+from settings.utils import CompanyChecker, ContactChecker
+import time
+
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
+# TODO
 
-@router.get("/")
-def test_function(amocrm: AmoCRM = Depends(get_amocrm)):
-    result = amocrm._make_test_request()
-    return result
+
+@router.get("/handle-hook")
+def handle_hook():
+    pass
 
 
 @router.get("/settings-object")
@@ -27,6 +31,15 @@ def get_settings_object():
 @router.get("/status", status_code=200, response_model=List[StatusSetting])
 def get_status_settings(session: Session = Depends(get_session)):
     return services.get_status_settings(session)
+
+
+@router.get("/custom-status", status_code=200)
+def get_custom_status_settings(session: Session = Depends(get_session)):
+    data = {
+        "company": services.get_status_settings_for_company(session),
+        "contact": services.get_status_settings_for_contact(session)
+    }
+    return data
 
 
 @router.post("/status", status_code=201)
@@ -54,11 +67,16 @@ def set_company_setting(company_setting: CompanySetting, session: Session = Depe
     return services.set_company_setting(session, company_setting)
 
 
-@router.get("/run-contact-check")
+@router.post("/run-contact-check")
 def run_contact_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-    contact_setting = services.get_contact_setting(session)
-    status_settings = services.get_status_settings(session)
-    # TODO
+    checker = ContactChecker(amocrm, session)
+    checker.run_check()
+
+
+@router.post("/run-company-check")
+def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
+    checker = CompanyChecker(amocrm, session)
+    checker.run_check()
 
 
 @router.get("/get-custom-fields")

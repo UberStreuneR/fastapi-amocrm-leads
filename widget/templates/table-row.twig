@@ -2,12 +2,14 @@
     <td>
         {{ include_control('input', {
             name: 'status_input',
+            value: statusValue
         }) }}
     </td>
     <td>
         {{ include_control('select', {
             name: 'status_select_dependency_type',
-            items: statusDependencyTypeOptions
+            items: statusDependencyTypeOptions,
+            selected: depTypeSelected
         }) }}
     </td>
     <td>
@@ -15,28 +17,33 @@
             name: 'status_select_entity_type',
             button_class_name: "entity-type-button",
             id: 'entity-type',
-            items: statusEntityTypeOptions
+            items: statusEntityTypeOptions,
+            selected: entityTypeSelected
         }) }}
     </td>
-    <td id="status-contact-field">
+    <td id="status-contact-field" {% if (entityTypeSelected == "company") %}style="display: none;"{% endif %}>
         {{ include_control('select', {
             name: 'status_select_entity_contact_field',
-            items: statusContactFieldOptions
+            items: statusContactFieldOptions,
+            selected: contactFieldSelected
         }) }}
     </td>
-    <td id="status-company-field" style="display: none;">
+    <td id="status-company-field" {% if (entityTypeSelected == "contact" or entityTypeSelected == undefined) %}style="display: none;"{% endif %}>
         {{ include_control('select', {
             name: 'status_select_entity_company_field',
-            items: statusCompanyFieldOptions
+            items: statusCompanyFieldOptions,
+            selected: companyFieldSelected
         }) }}
     </td>
     <td>
         <div id="rule">
             {{ include_control('input', {
                 name: 'status_input_from',
+                value: fromValue
             }) }}
             {{ include_control('input', {
                 name: 'status_input_to',
+                value: toValue
             }) }}
         </div>
     </td>

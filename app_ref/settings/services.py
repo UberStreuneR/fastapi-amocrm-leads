@@ -7,6 +7,14 @@ def get_status_settings(session: Session):
     return session.query(StatusSetting).all()
 
 
+def get_status_settings_for_company(session: Session) -> List[StatusSetting]:
+    return session.query(StatusSetting).where(StatusSetting.entity_type == "company").all()
+
+
+def get_status_settings_for_contact(session: Session) -> List[StatusSetting]:
+    return session.query(StatusSetting).where(StatusSetting.entity_type == "contact").all()
+
+
 def save_status_settings(session: Session, status_settings: List[StatusSetting]) -> List[StatusSetting]:
     delete_status_settings(session)
     result = []
@@ -21,11 +29,11 @@ def delete_status_settings(session: Session):
         session.delete(instance)
 
 
-def get_contact_setting(session: Session):
+def get_contact_setting(session: Session) -> ContactSetting:
     return session.query(ContactSetting).first()
 
 
-def set_contact_setting(session: Session, contact_setting: ContactSetting):
+def set_contact_setting(session: Session, contact_setting: ContactSetting) -> ContactSetting:
     instance = session.query(ContactSetting).first()
     if instance is None:
         instance = ContactSetting.create(session, **contact_setting.dict())
@@ -36,11 +44,11 @@ def set_contact_setting(session: Session, contact_setting: ContactSetting):
     return instance
 
 
-def get_company_setting(session: Session):
+def get_company_setting(session: Session) -> CompanySetting:
     return session.query(CompanySetting).first()
 
 
-def set_company_setting(session: Session, company_setting: CompanySetting):
+def set_company_setting(session: Session, company_setting: CompanySetting) -> CompanySetting:
     instance = session.query(CompanySetting).first()
     if instance is None:
         instance = CompanySetting.create(session, **company_setting.dict())

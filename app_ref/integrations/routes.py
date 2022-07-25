@@ -17,13 +17,10 @@ def install_integration(
     client_id: str = Query(),
 ):
     """Эндпоинт для установки интеграции"""
-    # logger.info("INSTALL_INTEGRATION path called")
     account = referer.split(".", 1)[0]
     data = IntegrationInstall(
         client_id=client_id, account=account, auth_code=code)
-    # logger.info("Calling install_integration")
     services.install_integration(session, data)
-    # logger.info("Called install_integration")
 
 
 @router.get("/uninstall/")

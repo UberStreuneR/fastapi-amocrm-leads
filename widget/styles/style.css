@@ -31,3 +31,21 @@ hr {
   margin: 1rem 0;
   border: none;
 }
+
+.loading-icon {
+  display: block;
+  height: 40px;
+  width: 40px;
+  margin: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-image: url("../images/loading.png");
+  animation: spin 1.5s linear infinite;
+  transform: rotate(180deg);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -16,15 +16,11 @@ def get_integrations(session: Session) -> List[Integration]:
 
 def install_integration(session: Session, data: IntegrationInstall) -> Integration:
     """Установить интеграцию и пройти авторизацию через authorization_code"""
-
     if (integration := get_integration(session, data.client_id)) is None:
         integration = Integration.create(session, **data.dict())
 
     amocrm = make_amocrm(session, integration)
     amocrm.authorize("authorization_code", data.auth_code)
-
-    # if settings_services.get_settings(session, data.client_id) is None:
-    #     settings_services.create_settings(session, amocrm, integration)
 
     return integration
 
@@ -45,10 +41,13 @@ def delete_integration(session: Session, client_id: str):
 def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
     """Создать инстанс AmoCRM для интеграции с хуком на обновление токенов"""
 
-    def on_auth_handler(client_id: str, access_token: str, refresh_token: str):
+    def on_auth_handler(client_id: str, access_token: str, refresh_token: str, instance: AmoCRM):
         data = IntegrationUpdate(
             access_token=access_token, refresh_token=refresh_token)
         update_integration(session, integration, data)
+        instance._set_pipeline_id()
+        instance._set_success_stage_id()
+        instance._set_inactive_stage_ids()
 
     return AmoCRM(
         account=integration.account,
@@ -57,7 +56,5 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         redirect_url=f"https://{settings.app_host}/integrations/install/",
         access_token=integration.access_token,
         refresh_token=integration.refresh_token,
-        # success_stage_id=settings.success_stage_id,
-        # pipeline_id=settings.pipeline_id,
         on_auth=on_auth_handler,
     )

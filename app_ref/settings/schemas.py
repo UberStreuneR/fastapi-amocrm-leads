@@ -12,7 +12,7 @@ class StatusSetting(DatabaseModel, BaseModel, table=True):
     status: str
     dependency_type: str  # quantity | sum
     entity_type: str  # company | contact
-    field_id: str
+    field_id: int
     from_amount: int
     to_amount: int
 
@@ -20,16 +20,16 @@ class StatusSetting(DatabaseModel, BaseModel, table=True):
 class BaseSetting(BaseModel):
     id: Optional[int] = Field(default=None, primary_key=True)
     months: int
-    lead_field_id: str
+    lead_field_id: int
 
 
 class ContactSetting(DatabaseModel, BaseSetting, table=True):
     """Настройки на вкладке Количество сделок у контакта"""
 
-    contact_field_id: str
+    contact_field_id: int
 
 
 class CompanySetting(DatabaseModel, BaseSetting, table=True):
     """Настройки на вкладке Количество сделок у контакта"""
 
-    company_field_id: str
+    company_field_id: int

@@ -1,29 +1,4 @@
 var data = {
-  //   // companyFields: [
-  //   //   { value: "1234232", label: "Email" },
-  //   //   { value: "3334322", label: "Web" },
-  //   //   { value: "3234562", label: "Адрес" },
-  //   //   { value: "4234", label: "Примечание" },
-  //   //   { value: "23412", label: "Почтовый адрес" },
-  //   //   { value: "34533", label: "Последняя оплата" },
-  //   //   { value: "23452345", label: "Уровень компании" },
-  //   //   { value: "3433347", label: "Сумма оплат за 6 мес." },
-  //   // ],
-  //   // leadFields: [
-  //   //   { value: "1", label: "Сообщ. в Телеграм" },
-  //   //   { value: "2", label: "Кол-во успешных сделок за 6 мес." },
-  //   //   { value: "3", label: "на дату" },
-  //   //   { value: "4", label: "Этап 'Завершены работы'" },
-  //   //   { value: "5", label: "Сделка для возврата залога?" },
-  //   //   { value: "6", label: "Воронка Первичное этап Закрыто" },
-  //   // ],
-  //   // contactFields: [
-  //   //   { value: "1", label: "Примечание" },
-  //   //   { value: "2", label: "Регион" },
-  //   //   { value: "3", label: "Уровень контакта" },
-  //   //   { value: "4", label: "Кол-во успешных сделок за 6 мес." },
-  //   //   { value: "5", label: "roistat" },
-  //   // ],
   dependencyTypes: [
     { value: "quantity", label: "От количества" },
     { value: "sum", label: "От суммы" },
@@ -41,8 +16,10 @@ define(["./templates.js"], function (templatesRenderer) {
       this.getTemplate = getTemplate;
       this.isDestroyed = false;
 
-      this.companyFields = [];
-      this.contactFields = [];
+      this.companyNumericFields = [];
+      this.companyStringFields = [];
+      this.contactNumericFields = [];
+      this.contactStringFields = [];
       this.leadFields = [];
       this.dependencyTypes = data["dependencyTypes"];
       this.entityTypes = data["entityTypes"];
@@ -86,28 +63,32 @@ define(["./templates.js"], function (templatesRenderer) {
     }
 
     returnItems() {
-      const companyItems = this.optionsToItems({
-        options: this.companyFields,
+      const companyStringItems = this.optionsToItems({
+        options: this.companyStringFields,
+      });
+      const companyNumericItems = this.optionsToItems({
+        options: this.companyNumericFields,
       });
       const leadItems = this.optionsToItems({ options: this.leadFields });
-      const contactItems = this.optionsToItems({
-        options: this.contactFields,
+      const contactStringItems = this.optionsToItems({
+        options: this.contactStringFields,
+      });
+      const contactNumericItems = this.optionsToItems({
+        options: this.contactNumericFields,
       });
       const dependencyItems = this.optionsToItems({
         options: this.dependencyTypes,
       });
       const entityItems = this.optionsToItems({ options: this.entityTypes });
       return {
-        companyItems,
+        companyStringItems,
+        companyNumericItems,
         leadItems,
-        contactItems,
+        contactStringItems,
+        contactNumericItems,
         dependencyItems,
         entityItems,
       };
-    }
-
-    checkItems() {
-      return this.companyFields;
     }
 
     addDeleteButtonListeners() {
@@ -161,7 +142,7 @@ define(["./templates.js"], function (templatesRenderer) {
       testBtn.addEventListener("click", () => {
         this.makeRequest({
           method: "get",
-          path: "settings/",
+          path: "settings/run-company-check",
           successful: response => {
             alert(JSON.stringify(response));
             console.log(response);
@@ -188,7 +169,6 @@ define(["./templates.js"], function (templatesRenderer) {
 
     addContactTabButtonListeners() {
       var saveButton = document.querySelector("#contact-tab #save");
-      //TODO: runCheck function
       var runCheck = document.querySelector("#contact-tab #runCheck");
       var contactMonths = document.querySelector(
         "#contact-tab input[name=contact_input_months]"
@@ -225,11 +205,20 @@ define(["./templates.js"], function (templatesRenderer) {
           },
         });
       });
+      runCheck.addEventListener("click", () => {
+        this.makeRequest({
+          method: "post",
+          path: "settings/run-contact-check",
+          successful: response => {
+            // alert(JSON.stringify(response));
+            // console.log(response);
+          },
+        });
+      });
     }
 
     addCompanyTabButtonListeners() {
       var saveButton = document.querySelector("#company-tab #save");
-      //TODO: runCheck function
       var runCheck = document.querySelector("#company-tab #runCheck");
       var companyMonths = document.querySelector(
         "#company-tab input[name=company_input_months]"
@@ -260,6 +249,16 @@ define(["./templates.js"], function (templatesRenderer) {
             lead_field_id: leadField,
             company_field_id: companyField,
           },
+          successful: response => {
+            // alert(JSON.stringify(response));
+            // console.log(response);
+          },
+        });
+      });
+      runCheck.addEventListener("click", () => {
+        this.makeRequest({
+          method: "post",
+          path: "settings/run-company-check",
           successful: response => {
             // alert(JSON.stringify(response));
             // console.log(response);
@@ -352,35 +351,60 @@ define(["./templates.js"], function (templatesRenderer) {
     }
 
     renderStatusTab(callback) {
-      const { dependencyItems, entityItems, companyItems, contactItems } =
-        this.returnItems();
       var statusTab = $("#status-tab");
-      this.getTemplate("status-tab")
-        .then(statusTemplate => {
-          return statusTemplate.render({
-            statusDependencyTypeOptions: dependencyItems,
-            statusEntityTypeOptions: entityItems,
-            statusCompanyFieldOptions: companyItems,
-            statusContactFieldOptions: contactItems,
+      this.requestSavedStatusSettings().then(settings => {
+        this.getTemplate("status-tab")
+          .then(statusTemplate => {
+            return statusTemplate.render();
+          })
+          .then(result => {
+            statusTab.append($(result));
+            if (settings.length > 0) {
+              settings.forEach(setting => {
+                const {
+                  status: statusValue,
+                  dependency_type: depTypeSelected,
+                  entity_type: entityTypeSelected,
+                  field_id: contactFieldSelected,
+                  field_id: companyFieldSelected,
+                  from_amount: fromValue,
+                  to_amount: toValue,
+                } = setting;
+                this.renderTableRow({
+                  statusValue: statusValue,
+                  depTypeSelected: depTypeSelected,
+                  entityTypeSelected: entityTypeSelected,
+                  contactFieldSelected: contactFieldSelected,
+                  companyFieldSelected: companyFieldSelected,
+                  fromValue: fromValue,
+                  toValue: toValue,
+                });
+              });
+            } else {
+              this.renderTableRow();
+            }
+
+            callback();
           });
-        })
-        .then(result => {
-          statusTab.append($(result));
-          callback();
-        });
+      });
     }
 
-    renderTableRow() {
+    renderTableRow(data = {}) {
       var tableBody = $("#status-tbody");
-      const { dependencyItems, entityItems, companyItems, contactItems } =
-        this.returnItems();
+      const {
+        dependencyItems,
+        entityItems,
+        companyStringItems,
+        contactStringItems,
+      } = this.returnItems();
       this.getTemplate("table-row")
         .then(rowTemplate => {
           return rowTemplate.render({
             statusDependencyTypeOptions: dependencyItems,
             statusEntityTypeOptions: entityItems,
-            statusCompanyFieldOptions: companyItems,
-            statusContactFieldOptions: contactItems,
+            statusCompanyFieldOptions: companyStringItems,
+            statusContactFieldOptions: contactStringItems,
+            ...data,
           });
         })
         .then(result => {
@@ -389,57 +413,153 @@ define(["./templates.js"], function (templatesRenderer) {
     }
 
     renderContactTab(callback) {
-      const { contactItems, leadItems } = this.returnItems();
+      const { contactNumericItems, leadItems } = this.returnItems();
       const contactTab = $("#contact-tab");
-      this.getTemplate("contact-tab")
-        .then(contactTemplate =>
-          contactTemplate.render({
-            contactFieldOptions: contactItems,
-            contactLeadFieldOptions: leadItems,
-          })
-        )
-        .then(result => {
-          contactTab.append($(result));
-          callback();
-        });
+      this.requestSavedContactSettings().then(settings => {
+        try {
+          const selectedContactField = settings["contact_field_id"];
+          const selectedLeadField = settings["lead_field_id"];
+          const months = settings["months"];
+          var values = { selectedContactField, selectedLeadField, months };
+        } catch (error) {
+          var values = {};
+        }
+        this.getTemplate("contact-tab")
+          .then(contactTemplate =>
+            contactTemplate.render({
+              contactFieldOptions: contactNumericItems,
+              contactLeadFieldOptions: leadItems,
+              ...values,
+            })
+          )
+          .then(result => {
+            contactTab.append($(result));
+            callback();
+          });
+      });
     }
 
     renderCompanyTab(callback) {
-      const { companyItems, leadItems } = this.returnItems();
+      const { companyNumericItems, leadItems } = this.returnItems();
       const companyTab = $("#company-tab");
-      this.getTemplate("company-tab")
-        .then(companyTemplate =>
-          $(
-            companyTemplate.render({
-              companyFieldOptions: companyItems,
-              companyLeadFieldOptions: leadItems,
-            })
+      this.requestSavedCompanySettings().then(settings => {
+        try {
+          const selectedCompanyField = settings["company_field_id"];
+          const selectedLeadField = settings["lead_field_id"];
+          const months = settings["months"];
+          var values = { selectedCompanyField, selectedLeadField, months };
+        } catch (error) {
+          alert(error);
+          var values = {};
+        }
+        this.getTemplate("company-tab")
+          .then(companyTemplate =>
+            $(
+              companyTemplate.render({
+                companyFieldOptions: companyNumericItems,
+                companyLeadFieldOptions: leadItems,
+                ...values,
+              })
+            )
           )
-        )
-        .then(result => {
-          companyTab.append(result);
-          callback();
-        });
+          .then(result => {
+            companyTab.append(result);
+            callback();
+          });
+      });
     }
 
     renderSkeleton(callback) {
+      let $page = $("#work_area");
       this.getTemplate("entirety").then(entireTemplate => {
-        let $page = $("#work_area");
         $page.append($(entireTemplate.render()));
         callback();
       });
     }
 
+    requestSavedContactSettings() {
+      const request = new Promise((resolve, reject) => {
+        this.makeRequest({
+          method: "get",
+          path: "settings/contact",
+          successful: response => {
+            // alert(JSON.stringify(response));
+            resolve(response);
+          },
+        });
+      });
+      return request;
+    }
+
+    requestSavedCompanySettings() {
+      const request = new Promise((resolve, reject) => {
+        this.makeRequest({
+          method: "get",
+          path: "settings/company",
+          successful: response => {
+            // alert(JSON.stringify(response));
+            resolve(response);
+          },
+        });
+      });
+      return request;
+    }
+
+    requestSavedStatusSettings() {
+      const request = new Promise((resolve, reject) => {
+        this.makeRequest({
+          method: "get",
+          path: "settings/status",
+          successful: response => {
+            // alert(JSON.stringify(response));
+            resolve(response);
+          },
+        });
+      });
+      return request;
+    }
+
+    requestSavedSettings() {
+      return Promise.all([
+        this.requestSavedContactSettings(),
+        this.requestSavedCompanySettings(),
+        this.requestSavedStatusSettings(),
+      ]);
+    }
+
+    addLoadingIcon() {
+      let $page = $("#work_area");
+      var loading = document.createElement("span");
+      loading.classList.add("loading-icon");
+      $page.append(loading);
+    }
+
+    removeLoadingIcon() {
+      var loading = document.querySelector("span.loading-icon");
+      loading.style.display = "none";
+    }
+
     renderPage() {
+      this.addLoadingIcon();
       this.makeRequest({
         method: "get",
         path: "settings/get-custom-fields",
         successful: response => {
-          this.companyFields = response["companyFields"];
-          this.contactFields = response["contactFields"];
+          // this.companyFields = response["companyFields"];
+          // this.contactFields = response["contactFields"];
+          // alert(JSON.stringify(response));
           this.leadFields = response["leadFields"];
+
+          //TODO:
+          this.companyStringFields = response["companyStringFields"];
+          this.companyNumericFields = response["companyNumericFields"];
+          this.contactStringFields = response["contactStringFields"];
+          this.contactNumericFields = response["contactNumericFields"];
+
           this.renderSkeleton(() => {
+            this.removeLoadingIcon();
             this.addTabButtonsListeners();
+            // this.addTestRequestButtonListener();
             this.renderContactTab(() => this.addContactTabButtonListeners());
             this.renderCompanyTab(() => this.addCompanyTabButtonListeners());
             this.renderStatusTab(() => this.addStatusTabButtonListeners());
