@@ -1,26 +1,22 @@
-from fastapi import APIRouter, Depends
+from cgitb import Hook
+from fastapi import APIRouter, Depends, Request
 
 from amocrm import AmoCRM
+from integrations.deps import get_amocrm_from_first_integration
 from settings.schemas import ContactSetting, CompanySetting, StatusSetting
-from integrations.deps import get_amocrm
+from integrations.deps import get_amocrm, get_auth_data
 from settings_ import settings
 from settings.schemas import StatusSetting
 from settings import services
 from integrations.deps import get_session
 from sqlmodel import Session
 from typing import List
-from settings.utils import CompanyChecker, ContactChecker
+from settings.utils import CompanyManager, ContactManager, HookHandler
 import time
+from querystring_parser import parser
 
 
 router = APIRouter(prefix="/settings", tags=["settings"])
-
-# TODO
-
-
-@router.get("/handle-hook")
-def handle_hook():
-    pass
 
 
 @router.get("/settings-object")
@@ -67,18 +63,29 @@ def set_company_setting(company_setting: CompanySetting, session: Session = Depe
     return services.set_company_setting(session, company_setting)
 
 
+@router.get("/get-custom-fields")
+def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm)):
+    return amocrm.get_custom_fields()
+
+
 @router.post("/run-contact-check")
 def run_contact_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-    checker = ContactChecker(amocrm, session)
-    checker.run_check()
+    manager = ContactManager(amocrm, session)
+    manager.run_check()
 
 
 @router.post("/run-company-check")
 def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-    checker = CompanyChecker(amocrm, session)
-    checker.run_check()
+    manager = CompanyManager(amocrm, session)
+    manager.run_check()
 
 
-@router.get("/get-custom-fields")
-def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm)):
-    return amocrm.get_custom_fields()
+@router.post("/handle-hook")
+# async def handle_hook(request: Request):
+async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
+
+    contact_manager = ContactManager(amocrm, session)
+    company_manager = CompanyManager(amocrm, session)
+
+    handler = HookHandler(contact_manager, company_manager, amocrm)
+    await handler.handle(request)
