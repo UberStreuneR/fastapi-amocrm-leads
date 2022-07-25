@@ -1,13 +1,17 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+
+from fastapi import Request
+from pip import main
 from amocrm import AmoCRM
 from sqlmodel import Session
 from settings.schemas import CompanySetting, ContactSetting, StatusSetting
 from settings import services
+from querystring_parser import parser
 from typing import List
 
 
-class EntityChecker(ABC):
+class EntityManager(ABC):
 
     @property
     @abstractmethod
@@ -24,6 +28,10 @@ class EntityChecker(ABC):
         pass
 
     @abstractmethod
+    def get_success_leads(self):
+        pass
+
+    @abstractmethod
     def update_active_leads(self):
         pass
 
@@ -36,11 +44,15 @@ class EntityChecker(ABC):
         pass
 
     @abstractmethod
+    def check(self):
+        pass
+
+    @abstractmethod
     def run_check(self):
         pass
 
 
-class CompanyChecker(EntityChecker):
+class CompanyManager(EntityManager):
 
     def __init__(self, amocrm: AmoCRM, session: Session) -> None:
         self._amocrm = amocrm
@@ -63,6 +75,9 @@ class CompanyChecker(EntityChecker):
     def set_field(self, entity_id, field_id, value):
         return self._amocrm.set_company_field(entity_id, field_id, value)
 
+    def get_success_leads(self, company_id: int, months: int):
+        return self._amocrm.get_company_success_leads(company_id, months)
+
     def update_active_leads(self, leads: List[int], sum_: int):
         for lead in leads:
             self._amocrm.set_lead_field(lead,
@@ -83,19 +98,21 @@ class CompanyChecker(EntityChecker):
                 self.apply_one_status_setting(
                     company_id, status_setting, sum_)
 
+    def check(self, company_id):
+        success_leads, active_leads = self.get_success_leads(
+            company_id, months=self.setting.months)
+        sum_ = sum(success_leads)
+        amount = len(success_leads)
+        self.apply_status_settings(company_id, sum_, amount)
+        self.set_field(company_id, self.setting.company_field_id, sum_)
+        self.update_active_leads(active_leads, sum_)
+
     def run_check(self):
         for company in self._amocrm.get_many_companies():
-            company_id = company['id']
-            success_leads, active_leads = self._amocrm.get_company_success_leads(
-                company_id, months=self.setting.months)
-            sum_ = sum(success_leads)
-            amount = len(success_leads)
-            self.apply_status_settings(company_id, sum_, amount)
-            self.set_field(company_id, self.setting.company_field_id, sum_)
-            self.update_active_leads(active_leads, sum_)
+            self.check(company['id'])
 
 
-class ContactChecker(EntityChecker):
+class ContactManager(EntityManager):
 
     def __init__(self, amocrm: AmoCRM, session: Session) -> None:
         self._amocrm = amocrm
@@ -118,6 +135,9 @@ class ContactChecker(EntityChecker):
     def set_field(self, entity_id, field_id, value):
         return self._amocrm.set_contact_field(entity_id, field_id, value)
 
+    def get_success_leads(self, contact_id: int, months: int):
+        return self._amocrm.get_contact_success_leads(contact_id, months)
+
     def update_active_leads(self, leads: List[int], amount: int):
         for lead in leads:
             self._amocrm.set_lead_field(lead,
@@ -138,13 +158,68 @@ class ContactChecker(EntityChecker):
                 self.apply_one_status_setting(
                     contact_id, status_setting, sum_)
 
+    def check(self, contact_id):
+        success_leads, active_leads = self.get_success_leads(
+            contact_id, months=self.setting.months)
+        sum_ = sum(success_leads)
+        amount = len(success_leads)
+        self.apply_status_settings(contact_id, sum_, amount)
+        self.set_field(contact_id, self.setting.contact_field_id, amount)
+        self.update_active_leads(active_leads, amount)
+
     def run_check(self):
         for contact in self._amocrm.get_many_contacts():
-            contact_id = contact['id']
-            success_leads, active_leads = self._amocrm.get_contact_success_leads(
-                contact_id, months=self.setting.months)
-            sum_ = sum(success_leads)
-            amount = len(success_leads)
-            self.apply_status_settings(contact_id, sum_, amount)
-            self.set_field(contact_id, self.setting.contact_field_id, amount)
-            self.update_active_leads(active_leads, amount)
+            self.check(contact['id'])
+
+
+class HookHandler:
+    def __init__(self, contact_manager: ContactManager, company_manager: CompanyManager, amocrm: AmoCRM) -> None:
+        self._contact_manager = contact_manager
+        self._company_manager = company_manager
+        self._amocrm = amocrm
+        self._lead_main_contact = None
+        self._lead_company = None
+
+    async def get_json_from_request(self, request: Request):
+        if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+            data = await request.body()
+            json_data = parser.parse(data, normalized=True)
+            return json_data
+
+    def get_lead_id_from_data(self, data):
+        lead_id = list(data['leads'].items())[0][1][0]['id']
+        return lead_id
+
+    def get_lead_main_contact_id(self, lead):
+        contacts = lead['_embedded']['contacts']
+        for contact in contacts:
+            if contact['is_main']:
+                return contact['id']
+
+    # this contact only has id and link, it's not a complete data of a contact entity
+    def get_contact_company_id(self, contact_id: int):
+
+        contact_data = self._amocrm._make_request(
+            "get", f"api/v4/contacts/{contact_id}")
+        contact_companies = contact_data['_embedded']['companies']
+        try:
+            return contact_companies[0]['id']
+        except IndexError:
+            return None
+
+    def get_main_contact_and_company_ids(self, data):
+        lead_id = self.get_lead_id_from_data(data)
+        lead = self._amocrm._make_request(
+            "get", f"api/v4/leads/{lead_id}", {"with": "contacts"})
+        main_contact_id = self.get_lead_main_contact_id(lead)
+        company_id = self.get_contact_company_id(main_contact_id)
+        return main_contact_id, company_id
+
+    async def handle(self, request: Request):
+        data = await self.get_json_from_request(request)
+        main_contact_id, company_id = self.get_main_contact_and_company_ids(
+            data)
+
+        self._contact_manager.check(main_contact_id)
+        if company_id is not None:
+            self._company_manager.check(company_id)

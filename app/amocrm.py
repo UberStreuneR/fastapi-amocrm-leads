@@ -43,7 +43,7 @@ class AmoCRM:
         self._auth_code = auth_code
         self._on_auth = on_auth
 
-    def _set_pipeline_id(self):
+    def set_pipeline_id(self):
         if settings.pipeline_id is None:
             response = self._make_request("get", "api/v4/leads/pipelines")
             for pipeline in response['_embedded']['pipelines']:
@@ -51,7 +51,7 @@ class AmoCRM:
                     settings.pipeline_id = pipeline['id']
                     break
 
-    def _set_success_stage_id(self):
+    def set_success_stage_id(self):
         if settings.success_stage_id is None:
             response = self._make_request(
                 "get", f"api/v4/leads/pipelines/{settings.pipeline_id}")
@@ -60,7 +60,7 @@ class AmoCRM:
                     settings.success_stage_id = status['id']
                     break
 
-    def _set_inactive_stage_ids(self):
+    def set_inactive_stage_ids(self):
         inactive_statuses = []
         if settings.inactive_stage_ids is None:
             response = self._make_request("get", "api/v4/leads/pipelines")
@@ -137,7 +137,7 @@ class AmoCRM:
 
             return self._make_request(method, path, data)
 
-        if response.status_code != 200:
+        if response.status_code != 200 and response.status_code != 201:
             raise UnexpectedResponse(response)
 
         return response.json()
@@ -171,9 +171,9 @@ class AmoCRM:
 
     def check_lead_is_in_success_stage(self, lead: dict):
         if settings.pipeline_id is None:
-            self._set_pipeline_id()
+            self.set_pipeline_id()
         if settings.success_stage_id is None:
-            self._set_success_stage_id()
+            self.set_success_stage_id()
 
         if lead['status_id'] == settings.success_stage_id and lead['pipeline_id'] == settings.pipeline_id:
             return True
@@ -181,7 +181,7 @@ class AmoCRM:
 
     def check_lead_is_active(self, lead: dict):
         if settings.inactive_stage_ids is None:
-            self._set_inactive_stage_ids()
+            self.set_inactive_stage_ids()
         if lead['status_id'] not in settings.inactive_stage_ids:
             return True
         return False
@@ -309,3 +309,27 @@ class AmoCRM:
             "leadFields": self.get_lead_custom_fields("numeric"),
         }
         return data
+
+    def create_hook(self):
+        webhook_endpoint = "https://" + settings.app_host + "/settings/handle-hook"
+
+        webhook_post_data = {
+            'destination': webhook_endpoint,
+            'settings': ['restore_lead', 'add_lead', 'status_lead']
+        }
+
+        params = {
+            "filter[destination]": webhook_endpoint
+        }
+
+        current_hooks = self._make_request(
+            "get", "api/v4/webhooks", data=params)
+
+        if webhook_endpoint not in current_hooks:
+            return self._make_request("post", "api/v4/webhooks",
+                                      data=webhook_post_data)
+
+    def delete_hook(self):
+        webhook_endpoint = "https://" + settings.app_host + "/settings/handle-hook"
+        self._make_request("delete", "api/v4/webhooks",
+                           {"destination": webhook_endpoint})

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from amocrm import AmoCRM
+from integrations.deps import get_amocrm_from_first_integration
 from integrations.deps import get_amocrm, get_logger
 from database import get_session
 from sqlmodel import Session
@@ -36,3 +37,14 @@ def get_integrations(session: Session = Depends(get_session)):
         "integrations": services.get_integrations(session),
     }
     return data
+
+
+@router.get("/get-first")
+def get_first_integration(session: Session = Depends(get_session)):
+
+    return services.get_first_integration(session)
+
+
+# @router.get("/amocrm")
+# def get_amo(amocrm=Depends(get_amocrm_from_first_integration)):
+#     return amocrm._client_id

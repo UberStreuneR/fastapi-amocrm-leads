@@ -14,6 +14,10 @@ def get_integrations(session: Session) -> List[Integration]:
     return session.query(Integration).all()
 
 
+def get_first_integration(session: Session) -> Integration:
+    return session.query(Integration).first()
+
+
 def install_integration(session: Session, data: IntegrationInstall) -> Integration:
     """Установить интеграцию и пройти авторизацию через authorization_code"""
     if (integration := get_integration(session, data.client_id)) is None:
@@ -45,9 +49,10 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         data = IntegrationUpdate(
             access_token=access_token, refresh_token=refresh_token)
         update_integration(session, integration, data)
-        instance._set_pipeline_id()
-        instance._set_success_stage_id()
-        instance._set_inactive_stage_ids()
+        instance.set_pipeline_id()
+        instance.set_success_stage_id()
+        instance.set_inactive_stage_ids()
+        print(instance.create_hook())
 
     return AmoCRM(
         account=integration.account,
