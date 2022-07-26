@@ -306,7 +306,7 @@ class AmoCRM:
         return data
 
     def create_hook(self):
-        webhook_endpoint = "https://" + settings.app_host + "/settings/handle-hook"
+        webhook_endpoint = settings.app_host + "settings/handle-hook"
 
         webhook_post_data = {
             'destination': webhook_endpoint,
@@ -325,6 +325,6 @@ class AmoCRM:
                                       data=webhook_post_data)
 
     def delete_hook(self):
-        webhook_endpoint = "https://" + settings.app_host + "/settings/handle-hook"
+        webhook_endpoint = settings.app_host + "settings/handle-hook"
         self._make_request("delete", "api/v4/webhooks",
                            {"destination": webhook_endpoint})

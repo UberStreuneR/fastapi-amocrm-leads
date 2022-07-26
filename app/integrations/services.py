@@ -58,7 +58,7 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         account=integration.account,
         client_id=integration.client_id,
         client_secret=settings.client_secret,
-        redirect_url=f"https://{settings.app_host}/integrations/install/",
+        redirect_url=f"{settings.app_host}integrations/install/",
         access_token=integration.access_token,
         refresh_token=integration.refresh_token,
         on_auth=on_auth_handler,
