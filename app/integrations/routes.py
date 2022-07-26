@@ -43,8 +43,3 @@ def get_integrations(session: Session = Depends(get_session)):
 def get_first_integration(session: Session = Depends(get_session)):
 
     return services.get_first_integration(session)
-
-
-# @router.get("/amocrm")
-# def get_amo(amocrm=Depends(get_amocrm_from_first_integration)):
-#     return amocrm._client_id

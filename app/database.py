@@ -5,7 +5,6 @@ from settings_ import settings
 from sqlmodel import SQLModel
 
 engine = create_engine(url=settings.database, echo=True)
-# SQLModel.metadata.create_all(engine)
 
 
 def get_session() -> Session:

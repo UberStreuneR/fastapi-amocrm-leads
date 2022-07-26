@@ -84,7 +84,7 @@ class CompanyManager(EntityManager):
             self._amocrm.set_lead_field(lead,
                                         self.setting.lead_field_id, sum_)
 
-    # comparison_value is either a sum or an amount
+    # comparison_value является либо суммой, либо количеством
     def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int):
         if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
             self.set_field(company_id,
@@ -145,7 +145,7 @@ class ContactManager(EntityManager):
             self._amocrm.set_lead_field(lead,
                                         self.setting.lead_field_id, amount)
 
-    # comparison_value is either a sum or an amount
+    # comparison_value является либо суммой, либо количеством
     def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int):
         if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
             self.set_field(contact_id,
@@ -198,7 +198,7 @@ class HookHandler:
             if contact['is_main']:
                 return contact['id']
 
-    # this contact only has id and link, it's not a complete data of a contact entity
+    # У этого контакта есть только id и ссылка
     def get_contact_company_id(self, contact_id: int):
 
         contact_data = self._amocrm._make_request(

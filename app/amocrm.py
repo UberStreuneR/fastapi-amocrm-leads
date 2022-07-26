@@ -32,8 +32,6 @@ class AmoCRM:
         auth_code: str = None,
         on_auth: Callable = None,
     ):
-        # Note: type code, could possibly be replaced with a schema
-        # def __init__(integrationProps) -> ...
         self._account = account
         self._client_id = client_id
         self._client_secret = client_secret
@@ -69,7 +67,6 @@ class AmoCRM:
                     if not status['is_editable']:
                         inactive_statuses.append(status['id'])
         settings.inactive_stage_ids = inactive_statuses
-        print(settings.inactive_stage_ids)
 
     @property
     def url(self) -> str:
@@ -139,7 +136,6 @@ class AmoCRM:
 
         if response.status_code != 200 and response.status_code != 201:
             raise UnexpectedResponse(response)
-        print(response.status_code)
         return response.json()
 
     def get_contact_leads(self, contact_id: str):
@@ -152,7 +148,6 @@ class AmoCRM:
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/companies/{company_id}", data)
-        # print(f"COMPANY RESPONSE {response['_embedded']['leads']}\n\n\n")
         return response['_embedded']['leads']
 
     def get_lead(self, lead_path: str):
@@ -221,19 +216,16 @@ class AmoCRM:
         return data
 
     def set_company_field(self, company_id: int, company_field_id: int, value: int):
-        # print(type(company_id), type(company_field_id), type(value))
         print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_patch_request_data(company_field_id, value)
         return self._make_request("patch", f"api/v4/companies/{company_id}", json.dumps(data))
 
     def set_contact_field(self, contact_id: int, contact_field_id: int, value: int):
-        # print(type(contact_id), type(contact_field_id), type(value))
         print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_patch_request_data(contact_field_id, value)
         return self._make_request("patch", f"api/v4/contacts/{contact_id}", json.dumps(data))
 
     def set_lead_field(self, lead_id: int, lead_field_id: int, value: int):
-        # print(type(lead_id), type(lead_field_id), type(value))
         print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         assert type(lead_field_id) == int
         data = self._make_patch_request_data(lead_field_id, value)
@@ -262,7 +254,7 @@ class AmoCRM:
             yield from result["_embedded"][entity]
             if "next" not in result["_links"]:
                 break
-            time.sleep(10)  # limit of 50 -> 5 entities per second
+            time.sleep(10)  # лимит в 50 сущностей -> 5 сущностей в секунду
 
             params["page"] += 1
 
@@ -297,7 +289,7 @@ class AmoCRM:
         return self.get_value_and_label_from_list(fields)
 
     def get_lead_custom_fields(self, field_type: str = "numeric"):
-        """Only numeric fields are used for entity type lead"""
+        """Только поля numeric используются для сущности лид"""
         generator = self._get_many(
             "custom_fields", f"/api/v4/leads/custom_fields")
         numeric_fields = self.get_fields_from_many(generator, field_type)

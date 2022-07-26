@@ -12,8 +12,6 @@ from integrations.deps import get_session
 from sqlmodel import Session
 from typing import List
 from settings.utils import CompanyManager, ContactManager, HookHandler
-import time
-from querystring_parser import parser
 
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -81,7 +79,6 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
 
 
 @router.post("/handle-hook")
-# async def handle_hook(request: Request):
 async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
 
     contact_manager = ContactManager(amocrm, session)
