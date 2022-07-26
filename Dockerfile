@@ -1,9 +1,7 @@
 FROM python:3.8
 WORKDIR /code
 COPY ./requirements.txt /code/requirements.txt
+RUN apt-get update && apt-get install -y netcat
 RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 COPY ./app /code/app
-ENTRYPOINT [ "./entrypoint.sh" ]
-# VOLUME /app /code/app
-# WORKDIR /code/app
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT [ "/code/app/entrypoint.sh" ]
