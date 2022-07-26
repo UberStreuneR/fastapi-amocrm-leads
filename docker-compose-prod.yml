@@ -7,9 +7,9 @@ services:
     command: sh -c "cd app && uvicorn main:app --reload --host 0.0.0.0 --port 80"
     labels:
       - "traefik.enable=true"
-      - "traefik.subdomain=sum-leads"
-      - "traefik.http.services.sum-leads.loadbalancer.server.port=80"
-      - "traefik.http.routers.sum-leads.tls.certresolver=letsEncrypt"
+      - "traefik.subdomain=contact-level"
+      - "traefik.http.services.contact-level.loadbalancer.server.port=80"
+      - "traefik.http.routers.contact-level.tls.certresolver=letsEncrypt"
     volumes:
       - ./app/:/code/app
     # ports:
