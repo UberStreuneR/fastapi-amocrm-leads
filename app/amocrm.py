@@ -139,7 +139,7 @@ class AmoCRM:
 
         if response.status_code != 200 and response.status_code != 201:
             raise UnexpectedResponse(response)
-
+        print(response.status_code)
         return response.json()
 
     def get_contact_leads(self, contact_id: str):
