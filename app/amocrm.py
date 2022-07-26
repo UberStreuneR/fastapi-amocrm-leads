@@ -222,16 +222,19 @@ class AmoCRM:
 
     def set_company_field(self, company_id: int, company_field_id: int, value: int):
         # print(type(company_id), type(company_field_id), type(value))
+        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_patch_request_data(company_field_id, value)
         return self._make_request("patch", f"api/v4/companies/{company_id}", json.dumps(data))
 
     def set_contact_field(self, contact_id: int, contact_field_id: int, value: int):
-        print(type(contact_id), type(contact_field_id), type(value))
+        # print(type(contact_id), type(contact_field_id), type(value))
+        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_patch_request_data(contact_field_id, value)
         return self._make_request("patch", f"api/v4/contacts/{contact_id}", json.dumps(data))
 
     def set_lead_field(self, lead_id: int, lead_field_id: int, value: int):
         # print(type(lead_id), type(lead_field_id), type(value))
+        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         assert type(lead_field_id) == int
         data = self._make_patch_request_data(lead_field_id, value)
         return self._make_request("patch", f"api/v4/leads/{lead_id}", json.dumps(data))
