@@ -63,13 +63,14 @@ class CompanyManager(EntityManager):
     @property
     def setting(self):
         if self._setting is None:
-            return services.get_company_setting(self._session)
+            self._setting = services.get_company_setting(self._session)
         return self._setting
 
     @property
     def status_settings(self):
         if self._status_settings is None:
-            return services.get_status_settings_for_company(self._session)
+            self._status_settings = services.get_status_settings_for_company(
+                self._session)
         return self._status_settings
 
     def set_field(self, entity_id, field_id, value):
@@ -123,13 +124,14 @@ class ContactManager(EntityManager):
     @property
     def setting(self):
         if self._setting is None:
-            return services.get_contact_setting(self._session)
+            self._setting = services.get_contact_setting(self._session)
         return self._setting
 
     @property
     def status_settings(self):
         if self._status_settings is None:
-            return services.get_status_settings_for_contact(self._session)
+            self._status_settings = services.get_status_settings_for_contact(
+                self._session)
         return self._status_settings
 
     def set_field(self, entity_id, field_id, value):

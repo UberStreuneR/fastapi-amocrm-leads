@@ -449,7 +449,7 @@ define(["./templates.js"], function (templatesRenderer) {
           const months = settings["months"];
           var values = { selectedCompanyField, selectedLeadField, months };
         } catch (error) {
-          alert(error);
+          // alert(error);
           var values = {};
         }
         this.getTemplate("company-tab")
