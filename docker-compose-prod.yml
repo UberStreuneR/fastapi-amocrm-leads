@@ -27,6 +27,19 @@ services:
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
 
+  worker:
+    build: .
+    container_name: worker
+    command: celery -A app.worker worker --loglevel=INFO -Q settings
+    env_file:
+      - ./.prod.env
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: "rabbitmq:3.10.5"
+
 networks:
   default:
     external:

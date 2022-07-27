@@ -24,3 +24,16 @@ services:
       POSTGRES_DB: contact_level
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
+
+  worker:
+    build: .
+    container_name: worker
+    command: celery -A app.worker worker --loglevel=INFO -Q settings
+    env_file:
+      - ./.env
+    depends_on:
+      - rabbitmq
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: "rabbitmq:3.10.5"

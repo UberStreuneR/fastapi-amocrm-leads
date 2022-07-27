@@ -17,6 +17,8 @@ from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
 import functools
+from worker import print_number, background_request
+
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -82,12 +84,12 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
-async def background_request(request_data, amocrm, session):
-    contact_manager = ContactManager(amocrm, session)
-    company_manager = CompanyManager(amocrm, session)
+# async def background_request(request_data, amocrm, session):
+#     contact_manager = ContactManager(amocrm, session)
+#     company_manager = CompanyManager(amocrm, session)
 
-    handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request_data)
+#     handler = HookHandler(contact_manager, company_manager, amocrm)
+#     await handler.handle(request_data)
 
 
 @router.post("/handle-hook")
@@ -97,6 +99,12 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocr
     if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
-        background_tasks.add_task(
-            background_request, json_data, amocrm, session)
+        background_request.delay(data, amocrm, session)
+        # background_tasks.add_task(
+        #     background_request, json_data, amocrm, session)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/celery")
+async def run_celery_task():
+    print_number.delay(42)
