@@ -20,14 +20,14 @@ def print_number(number: int):
 
 
 @app.task(name="handle-hook", queue="settings")
-async def background_request(request_data):
+def background_request(request_data):
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
         contact_manager = ContactManager(amocrm, session)
         company_manager = CompanyManager(amocrm, session)
 
         handler = HookHandler(contact_manager, company_manager, amocrm)
-        await handler.handle(request_data)
+        handler.handle(request_data)
         session.commit()
 
 
