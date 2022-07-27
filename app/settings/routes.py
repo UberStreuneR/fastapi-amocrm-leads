@@ -109,7 +109,7 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocr
         json_data = parser.parse(data, normalized=True)
         background_tasks.add_task(
             background_request, json_data, amocrm, session)
-        return Response(status_code=200)
+        return Response(status_code=204)
     return Response(status_code=400)
     # return json_data
     # queue = Queue()
