@@ -13,6 +13,7 @@ from sqlmodel import Session
 from typing import List
 from settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
+from fastapi import status
 from querystring_parser import parser
 
 
@@ -100,7 +101,7 @@ async def background_request(request_body, amocrm, session):
     await handler.handle(request_body)
 
 
-@router.post("/handle-hook", status_code=200)
+@router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
 
     # body = await request.body()
@@ -109,8 +110,8 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocr
         json_data = parser.parse(data, normalized=True)
         background_tasks.add_task(
             background_request, json_data, amocrm, session)
-        return Response(status_code=204)
-    return Response(status_code=400)
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=status.HTTP_400_BAD_REQUEST)
     # return json_data
     # queue = Queue()
     # queue.add_hook(request)
