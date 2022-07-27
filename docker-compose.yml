@@ -13,14 +13,16 @@ services:
     env_file:
       - ./.env
     depends_on:
-      - postgres
+      - contact_level_db
 
-  postgres:
+  contact_level_db:
     image: postgres
-    container_name: postgres
+    container_name: contact_level_db
     environment:
       POSTGRES_USER: docker
       POSTGRES_PASSWORD: docker
-      POSTGRES_DB: database
+      POSTGRES_DB: contact_level
+    ports:
+      - "5433:5433"
     volumes:
       - ./data/postgres:/var/lib/postgresql/data
