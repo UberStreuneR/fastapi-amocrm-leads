@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from starlette.requests import ClientDisconnect
-
+import asyncio
 from amocrm import AmoCRM
 from integrations.deps import get_amocrm_from_first_integration
 from settings.schemas import ContactSetting, CompanySetting, StatusSetting
@@ -82,11 +82,14 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
 
 
 async def background_request(request, amocrm, session):
-    contact_manager = ContactManager(amocrm, session)
-    company_manager = CompanyManager(amocrm, session)
+    asyncio.sleep(5)
+    data = await request.body()
+    print(data)
+    # contact_manager = ContactManager(amocrm, session)
+    # company_manager = CompanyManager(amocrm, session)
 
-    handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request)
+    # handler = HookHandler(contact_manager, company_manager, amocrm)
+    # await handler.handle(request)
 
 
 @router.post("/handle-hook")
