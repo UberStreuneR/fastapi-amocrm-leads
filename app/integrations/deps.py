@@ -50,7 +50,8 @@ def get_amocrm(
     return services.make_amocrm(session, integration)
 
 
-def get_amocrm_from_first_integration(session: Session = Depends(get_session)):
+def get_amocrm_from_first_integration():
+    session = get_session()
     integration = services.get_first_integration(session)
     if integration is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
