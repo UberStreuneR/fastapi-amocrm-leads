@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Request
 from starlette.requests import ClientDisconnect
 import asyncio
+import concurrent
 from amocrm import AmoCRM
 from integrations.deps import get_amocrm_from_first_integration
 from settings.schemas import ContactSetting, CompanySetting, StatusSetting
@@ -15,7 +16,7 @@ from settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-import time
+
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -81,16 +82,29 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
-async def background_request(request_body, amocrm, session):
-    # await asyncio.sleep(2)
-    time.sleep(3)
-    # data = await request.body()
-    print(request_body)
+def background_request(request_data, amocrm, session):
+
+    contact_manager = ContactManager(amocrm, session)
+    company_manager = CompanyManager(amocrm, session)
+
+    handler = HookHandler(contact_manager, company_manager, amocrm)
+    handler.handle(request_data)
+
+
+def cpu_bound_func(request_data, amocrm, session):
+    def inner():
+        background_request(request_data, amocrm, session)
+    return inner
 
 
 @router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
-    request_body = await request.body()
-    background_tasks.add_task(
-        background_request, request_body, amocrm, session)
+    # background_tasks.add_task(
+    #     background_request, request, amocrm, session)
+    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+        data = await request.body()
+        json_data = parser.parse(data, normalized=True)
+    loop = asyncio.get_event_loop()
+    with concurrent.futures.ProcessPoolExecutor() as pool:
+        result = await loop.run_in_executor(pool, cpu_bound_func(json_data, amocrm, session))
     return Response(status_code=status.HTTP_204_NO_CONTENT)
