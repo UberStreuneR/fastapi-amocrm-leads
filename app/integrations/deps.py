@@ -3,13 +3,12 @@ from jose import jwt, JWTError
 from sqlmodel import Session
 from starlette import status
 from starlette.requests import Request
-
 from app.amocrm import AmoCRM
 from app.database import get_session
 from app.integrations import services
 from app.integrations.schemas import Integration
 from app.settings_ import settings
-
+from app.database import engine
 
 import logging
 import sys
@@ -50,11 +49,12 @@ def get_amocrm(
     return services.make_amocrm(session, integration)
 
 
-def get_amocrm_from_first_integration(session: Session = Depends(get_session)):
-    integration = services.get_first_integration(session)
-    if integration is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-    return services.make_amocrm(session, integration)
+def get_amocrm_from_first_integration():
+    with Session(engine) as session:
+        integration = services.get_first_integration(session)
+        if integration is None:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+        return services.make_amocrm(session, integration)
 
 
 def get_logger():

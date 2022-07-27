@@ -89,14 +89,10 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
 
 @router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
-    # background_tasks.add_task(
-    #     background_request, request, amocrm, session)
     if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
-        background_request.delay(data, amocrm, session)
-        # background_tasks.add_task(
-        #     background_request, json_data, amocrm, session)
+        background_request.delay(json_data, amocrm, session)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

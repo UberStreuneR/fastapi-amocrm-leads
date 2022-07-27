@@ -3,6 +3,10 @@ import time
 from app.settings.utils import ContactManager, CompanyManager, HookHandler
 from celery import Celery
 from kombu import Queue, Exchange
+from app.integrations.deps import get_amocrm_from_first_integration
+from sqlmodel import Session
+from app.database import engine
+
 
 app = Celery(__name__)
 app.conf.broker_url = os.environ.get("CELERY_BROKER_URL")
@@ -15,12 +19,14 @@ def print_number(number: int):
 
 
 @app.task(name="handle-hook")
-async def background_request(request_data, amocrm, session):
-    contact_manager = ContactManager(amocrm, session)
-    company_manager = CompanyManager(amocrm, session)
+async def background_request(request_data):
+    amocrm = get_amocrm_from_first_integration()
+    with Session(engine) as session:
+        contact_manager = ContactManager(amocrm, session)
+        company_manager = CompanyManager(amocrm, session)
 
-    handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request_data)
+        handler = HookHandler(contact_manager, company_manager, amocrm)
+        await handler.handle(request_data)
 
 
 app.conf.task_queues = (
