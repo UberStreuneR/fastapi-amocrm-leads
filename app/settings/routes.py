@@ -78,14 +78,17 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
+async def handle_hook_task(request: Request, amocrm: AmoCRM, session: Session):
+    contact_manager = ContactManager(amocrm, session)
+    company_manager = CompanyManager(amocrm, session)
+
+    handler = HookHandler(contact_manager, company_manager, amocrm)
+    await handler.handle(request)
+
+
 @router.post("/handle-hook")
-async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
+async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
+    background_tasks.add_task(handle_hook_task, request, amocrm, session)
 
     # queue = Queue()
     # queue.add_hook(request)
-    print(f"\n\n\n\nRequest body: {await request.body()}\n\n\n\n")
-    # contact_manager = ContactManager(amocrm, session)
-    # company_manager = CompanyManager(amocrm, session)
-
-    # handler = HookHandler(contact_manager, company_manager, amocrm)
-    # await handler.handle(request)
