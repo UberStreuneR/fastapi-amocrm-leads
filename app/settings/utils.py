@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
+from starlette.requests import ClientDisconnect
 from fastapi import Request
 from pip import main
 from amocrm import AmoCRM
@@ -110,7 +111,10 @@ class CompanyManager(EntityManager):
 
     def run_check(self):
         for company in self._amocrm.get_many_companies():
-            self.check(company['id'])
+            try:
+                self.check(company['id'])
+            except ClientDisconnect:
+                self.check(company['id'])
 
 
 class ContactManager(EntityManager):
@@ -171,7 +175,10 @@ class ContactManager(EntityManager):
 
     def run_check(self):
         for contact in self._amocrm.get_many_contacts():
-            self.check(contact['id'])
+            try:
+                self.check(contact['id'])
+            except ClientDisconnect:
+                self.check(contact['id'])
 
 
 class HookHandler:

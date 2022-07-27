@@ -1,5 +1,6 @@
 from cgitb import Hook
 from fastapi import APIRouter, Depends, Request
+from starlette.requests import ClientDisconnect
 
 from amocrm import AmoCRM
 from integrations.deps import get_amocrm_from_first_integration
@@ -85,4 +86,7 @@ async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from
     company_manager = CompanyManager(amocrm, session)
 
     handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request)
+    try:
+        await handler.handle(request)
+    except ClientDisconnect:
+        await handler.handle(request)
