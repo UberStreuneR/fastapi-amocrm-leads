@@ -13,6 +13,7 @@ from integrations.deps import get_session
 from sqlmodel import Session
 from typing import List
 from settings.utils import CompanyManager, ContactManager, HookHandler, Queue
+from fastapi import BackgroundTasks
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -81,14 +82,14 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
 @router.post("/handle-hook")
 async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
 
-    queue = Queue()
-    queue.add_hook(request)
+    # queue = Queue()
+    # queue.add_hook(request)
 
     contact_manager = ContactManager(amocrm, session)
     company_manager = CompanyManager(amocrm, session)
 
-    handler = HookHandler(contact_manager, company_manager, amocrm, queue)
+    handler = HookHandler(contact_manager, company_manager, amocrm)
     try:
-        await handler.handle()
+        await handler.handle(request)
     except ClientDisconnect:
-        await handler.handle()
+        await handler.handle(request)

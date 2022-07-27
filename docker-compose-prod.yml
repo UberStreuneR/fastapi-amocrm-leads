@@ -4,7 +4,7 @@ services:
   app:
     build: .
     container_name: app
-    command: sh -c "cd app && uvicorn main:app --reload --host 0.0.0.0 --port 80"
+    command: sh -c "cd app && uvicorn main:app --reload --host 0.0.0.0 --port 80 --workers 4"
     labels:
       - "traefik.enable=true"
       - "traefik.subdomain=contact-level"

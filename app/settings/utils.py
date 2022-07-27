@@ -180,37 +180,37 @@ class ContactManager(EntityManager):
                 self.check(contact['id'])
 
 
-class QueueSingletonMeta(type):
-    _instances = {}
+# class QueueSingletonMeta(type):
+#     _instances = {}
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            instance = super().__call__(*args, **kwargs)
-            cls._instances[cls] = instance
-        return cls._instances[cls]
+#     def __call__(cls, *args, **kwargs):
+#         if cls not in cls._instances:
+#             instance = super().__call__(*args, **kwargs)
+#             cls._instances[cls] = instance
+#         return cls._instances[cls]
 
 
-class Queue(metaclass=QueueSingletonMeta):
-    _hooks = []
+# class Queue(metaclass=QueueSingletonMeta):
+#     _hooks = []
 
-    def add_hook(self, hook):
-        self._hooks.append(hook)
+#     def add_hook(self, hook):
+#         self._hooks.append(hook)
 
-    def get_hooks(self):
-        while len(self._hooks) > 0:
-            yield self.get_hook()
+#     def get_hooks(self):
+#         while len(self._hooks) > 0:
+#             yield self.get_hook()
 
-    def get_hook(self):
-        return self._hooks.pop(0)
+#     def get_hook(self):
+#         return self._hooks.pop(0)
 
 
 class HookHandler:
 
-    def __init__(self, contact_manager: ContactManager, company_manager: CompanyManager, amocrm: AmoCRM, queue: Queue) -> None:
+    def __init__(self, contact_manager: ContactManager, company_manager: CompanyManager, amocrm: AmoCRM) -> None:
         self._contact_manager = contact_manager
         self._company_manager = company_manager
         self._amocrm = amocrm
-        self._queue = queue
+        # self._queue = queue
         self._lead_main_contact = None
         self._lead_company = None
 
@@ -249,13 +249,13 @@ class HookHandler:
         company_id = self.get_contact_company_id(main_contact_id)
         return main_contact_id, company_id
 
-    async def handle(self):
-        # async def handle(self, request: Request):
-        for request in self._queue.get_hooks():
-            data = await self.get_json_from_request(request)
-            main_contact_id, company_id = self.get_main_contact_and_company_ids(
-                data)
+    # async def handle(self):
+    async def handle(self, request: Request):
+        # for request in self._queue.get_hooks():
+        data = await self.get_json_from_request(request)
+        main_contact_id, company_id = self.get_main_contact_and_company_ids(
+            data)
 
-            self._contact_manager.check(main_contact_id)
-            if company_id is not None:
-                self._company_manager.check(company_id)
+        self._contact_manager.check(main_contact_id)
+        if company_id is not None:
+            self._company_manager.check(company_id)
