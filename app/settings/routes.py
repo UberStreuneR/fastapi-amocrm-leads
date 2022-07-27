@@ -83,9 +83,9 @@ async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from
 
     # queue = Queue()
     # queue.add_hook(request)
+    print(f"\n\n\n\nRequest body: {await request.body()}\n\n\n\n")
+    # contact_manager = ContactManager(amocrm, session)
+    # company_manager = CompanyManager(amocrm, session)
 
-    contact_manager = ContactManager(amocrm, session)
-    company_manager = CompanyManager(amocrm, session)
-
-    handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request)
+    # handler = HookHandler(contact_manager, company_manager, amocrm)
+    # await handler.handle(request)

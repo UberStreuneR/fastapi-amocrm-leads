@@ -216,10 +216,7 @@ class HookHandler:
 
     async def get_json_from_request(self, request: Request):
         if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
-            try:
-                data = await request.body()
-            except ClientDisconnect:
-                data = request.body()
+            data = await request.body()
             json_data = parser.parse(data, normalized=True)
             return json_data
 
