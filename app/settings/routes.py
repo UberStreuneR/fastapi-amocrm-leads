@@ -82,14 +82,12 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
-def background_request(request_data):
-    amocrm = get_amocrm_from_first_integration()
-    session = get_session()
+async def background_request(request_data, amocrm, session):
     contact_manager = ContactManager(amocrm, session)
     company_manager = CompanyManager(amocrm, session)
 
     handler = HookHandler(contact_manager, company_manager, amocrm)
-    handler.handle(request_data)
+    await handler.handle(request_data)
 
 
 @router.post("/handle-hook")
@@ -99,7 +97,6 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocr
     if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
-    loop = asyncio.get_event_loop()
-    with concurrent.futures.ProcessPoolExecutor() as pool:
-        result = await loop.run_in_executor(pool, functools.partial(background_request, json_data))
+        background_tasks.add_task(
+            background_request, json_data, amocrm, session)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

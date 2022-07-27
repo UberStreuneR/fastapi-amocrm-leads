@@ -231,7 +231,7 @@ class HookHandler:
                 return contact['id']
 
     # У этого контакта есть только id и ссылка
-    def get_contact_company_id(self, contact_id: int):
+    async def get_contact_company_id(self, contact_id: int):
 
         contact_data = self._amocrm._make_request(
             "get", f"api/v4/contacts/{contact_id}")
@@ -241,18 +241,18 @@ class HookHandler:
         except IndexError:
             return None
 
-    def get_main_contact_and_company_ids(self, data):
+    async def get_main_contact_and_company_ids(self, data):
         lead_id = self.get_lead_id_from_data(data)
         lead = self._amocrm._make_request(
             "get", f"api/v4/leads/{lead_id}", {"with": "contacts"})
-        main_contact_id = self.get_lead_main_contact_id(lead)
-        company_id = self.get_contact_company_id(main_contact_id)
+        main_contact_id = await self.get_lead_main_contact_id(lead)
+        company_id = await self.get_contact_company_id(main_contact_id)
         return main_contact_id, company_id
 
     # async def handle(self, request: Request):
-    def handle(self, data):
+    async def handle(self, data):
         # data = await self.get_json_from_request(request)
-        main_contact_id, company_id = self.get_main_contact_and_company_ids(
+        main_contact_id, company_id = await self.get_main_contact_and_company_ids(
             data)
 
         self._contact_manager.check(main_contact_id)
