@@ -82,7 +82,7 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
 
 
 async def background_request(request, amocrm, session):
-    asyncio.sleep(5)
+    await asyncio.sleep(2)
     data = await request.body()
     print(data)
     # contact_manager = ContactManager(amocrm, session)
