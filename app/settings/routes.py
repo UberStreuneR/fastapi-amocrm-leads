@@ -15,7 +15,7 @@ from settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-
+import time
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -81,19 +81,16 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
-async def background_request(request, amocrm, session):
-    await asyncio.sleep(2)
-    data = await request.body()
-    print(data)
-    # contact_manager = ContactManager(amocrm, session)
-    # company_manager = CompanyManager(amocrm, session)
-
-    # handler = HookHandler(contact_manager, company_manager, amocrm)
-    # await handler.handle(request)
+async def background_request(request_body, amocrm, session):
+    # await asyncio.sleep(2)
+    time.sleep(3)
+    # data = await request.body()
+    print(request_body)
 
 
 @router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
+    request_body = await request.body()
     background_tasks.add_task(
-        background_request, request, amocrm, session)
+        background_request, request_body, amocrm, session)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
