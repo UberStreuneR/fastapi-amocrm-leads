@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 
 from starlette.requests import ClientDisconnect
 from fastapi import Request
-from amocrm import AmoCRM
+from app.amocrm import AmoCRM
 from sqlmodel import Session
-from settings.schemas import CompanySetting, ContactSetting, StatusSetting
-from settings import services
+from app.settings.schemas import CompanySetting, ContactSetting, StatusSetting
+from app.settings import services
 from querystring_parser import parser
 from typing import List
 

@@ -1,4 +1,4 @@
-from settings.schemas import StatusSetting, ContactSetting, CompanySetting
+from app.settings.schemas import StatusSetting, ContactSetting, CompanySetting
 from sqlmodel import Session
 from typing import List
 

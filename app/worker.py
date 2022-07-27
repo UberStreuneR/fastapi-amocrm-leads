@@ -1,6 +1,6 @@
 import os
 import time
-from settings.utils import ContactManager, CompanyManager, HookHandler
+from app.settings.utils import ContactManager, CompanyManager, HookHandler
 from celery import Celery
 from kombu import Queue, Exchange
 

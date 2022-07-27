@@ -1,6 +1,5 @@
-from ast import Str
 from pydantic import BaseModel
-from database import DatabaseModel
+from app.database import DatabaseModel
 from typing import Union, Optional
 from sqlmodel import Field
 

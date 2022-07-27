@@ -5,10 +5,10 @@ from fastapi.openapi.docs import (
     get_swagger_ui_oauth2_redirect_html,
 )
 from starlette.middleware.cors import CORSMiddleware
-from integrations.routes import router as integrations_router
-from settings.routes import router as settings_router
+from app.integrations.routes import router as integrations_router
+from app.settings.routes import router as settings_router
 from sqlmodel import SQLModel
-from database import engine
+from app.database import engine
 
 app = FastAPI(docs_url=None, redoc_url=None)
 app.include_router(integrations_router)
@@ -28,7 +28,7 @@ async def on_startup():
 
 
 """Для отображения docs, в силу того что дефолтный cdn не подгружается"""
-app.mount("/my_static", StaticFiles(directory="static"), name="static")
+app.mount("/app/my_static", StaticFiles(directory="app/static"), name="static")
 
 
 @app.get("/docs", include_in_schema=False)

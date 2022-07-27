@@ -1,8 +1,8 @@
 from typing import List, Union
-from amocrm import AmoCRM
-from integrations.schemas import IntegrationInstall, Integration, IntegrationUpdate
+from app.amocrm import AmoCRM
+from app.integrations.schemas import IntegrationInstall, Integration, IntegrationUpdate
 from sqlmodel import Session
-from settings_ import settings
+from app.settings_ import settings
 
 
 def get_integration(session: Session, client_id: str) -> Union[Integration, None]:

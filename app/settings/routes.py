@@ -1,23 +1,18 @@
 from fastapi import APIRouter, Depends, Request
 from starlette.requests import ClientDisconnect
-import asyncio
-import concurrent
-from amocrm import AmoCRM
-from integrations.deps import get_amocrm_from_first_integration
-from settings.schemas import ContactSetting, CompanySetting, StatusSetting
-from integrations.deps import get_amocrm, get_auth_data
-from settings_ import settings
-from settings.schemas import StatusSetting
-from settings import services
-from integrations.deps import get_session
+from app.amocrm import AmoCRM
+from app.integrations.deps import get_amocrm_from_first_integration, get_amocrm, get_auth_data, get_session
+from app.settings.schemas import ContactSetting, CompanySetting, StatusSetting
+from app.settings_ import settings
+from app.settings.schemas import StatusSetting
+from app.settings import services
 from sqlmodel import Session
 from typing import List
-from settings.utils import CompanyManager, ContactManager, HookHandler
+from app.settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-import functools
-from worker import print_number, background_request
+from app.worker import print_number, background_request
 
 
 router = APIRouter(prefix="/settings", tags=["settings"])

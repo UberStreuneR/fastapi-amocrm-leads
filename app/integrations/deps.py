@@ -4,11 +4,11 @@ from sqlmodel import Session
 from starlette import status
 from starlette.requests import Request
 
-from amocrm import AmoCRM
-from database import get_session
-from integrations import services
-from integrations.schemas import Integration
-from settings_ import settings
+from app.amocrm import AmoCRM
+from app.database import get_session
+from app.integrations import services
+from app.integrations.schemas import Integration
+from app.settings_ import settings
 
 
 import logging

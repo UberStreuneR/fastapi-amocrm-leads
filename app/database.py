@@ -1,8 +1,7 @@
 from sqlalchemy.orm import declared_attr
 from sqlmodel import Session, SQLModel
 from sqlmodel import create_engine
-from settings_ import settings
-from sqlmodel import SQLModel
+from app.settings_ import settings
 
 engine = create_engine(url=settings.database)
 

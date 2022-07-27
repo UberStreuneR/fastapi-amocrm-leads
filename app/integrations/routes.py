@@ -1,11 +1,10 @@
 from fastapi import APIRouter, Depends, Query
-from amocrm import AmoCRM
-from integrations.deps import get_amocrm_from_first_integration
-from integrations.deps import get_amocrm, get_logger
-from database import get_session
+from app.amocrm import AmoCRM
+from app.integrations.deps import get_amocrm, get_logger, get_amocrm_from_first_integration
+from app.database import get_session
 from sqlmodel import Session
-from integrations.schemas import IntegrationInstall
-from integrations import services
+from app.integrations.schemas import IntegrationInstall
+from app.integrations import services
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 

@@ -4,7 +4,7 @@ services:
   app:
     build: .
     container_name: app
-    command: sh -c "cd app && uvicorn main:app --reload --host 0.0.0.0 --port 80"
+    command: sh -c "uvicorn app.main:app --reload --host 0.0.0.0 --port 80"
     restart: unless-stopped
     volumes:
       - ./app/:/code/app
