@@ -86,9 +86,13 @@ async def handle_hook_task(request: Request, amocrm: AmoCRM, session: Session):
     await handler.handle(request)
 
 
+async def test_func(param):
+    print(f"\n\nBG task should work, {param}\n\n")
+
+
 @router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
     background_tasks.add_task(handle_hook_task, request, amocrm, session)
-
+    background_tasks.add_task(test_func, "foo")
     # queue = Queue()
     # queue.add_hook(request)
