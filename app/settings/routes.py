@@ -81,37 +81,16 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
-# async def handle_hook_task(request: Request, amocrm: AmoCRM, session: Session):
-    # contact_manager = ContactManager(amocrm, session)
-    # company_manager = CompanyManager(amocrm, session)
-
-    # handler = HookHandler(contact_manager, company_manager, amocrm)
-    # await handler.handle(request)
-
-
-async def test_func(body):
-    print(f"\n\n{body}\n\n")
-
-
-async def background_request(request_body, amocrm, session):
+async def background_request(request, amocrm, session):
     contact_manager = ContactManager(amocrm, session)
     company_manager = CompanyManager(amocrm, session)
 
     handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request_body)
+    await handler.handle(request)
 
 
 @router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
-
-    # body = await request.body()
-    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
-        data = await request.body()
-        json_data = parser.parse(data, normalized=True)
-        background_tasks.add_task(
-            background_request, json_data, amocrm, session)
-        return Response(status_code=status.HTTP_204_NO_CONTENT)
-    return Response(status_code=status.HTTP_400_BAD_REQUEST)
-    # return json_data
-    # queue = Queue()
-    # queue.add_hook(request)
+    background_tasks.add_task(
+        background_request, request, amocrm, session)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
