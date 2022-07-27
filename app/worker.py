@@ -1,4 +1,5 @@
 import os
+import queue
 import time
 from app.settings.utils import ContactManager, CompanyManager, HookHandler
 from celery import Celery
@@ -18,7 +19,7 @@ def print_number(number: int):
     return number
 
 
-@app.task(name="handle-hook")
+@app.task(name="handle-hook", queue="settings")
 async def background_request(request_data):
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
@@ -27,6 +28,7 @@ async def background_request(request_data):
 
         handler = HookHandler(contact_manager, company_manager, amocrm)
         await handler.handle(request_data)
+        session.commit()
 
 
 app.conf.task_queues = (
