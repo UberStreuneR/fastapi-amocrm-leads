@@ -250,9 +250,11 @@ class HookHandler:
         return main_contact_id, company_id
 
     # async def handle(self):
-    async def handle(self, request: Request):
+    # async def handle(self, request: Request):
+    async def handle(self, request_data):
         # for request in self._queue.get_hooks():
-        data = await self.get_json_from_request(request)
+        # data = await self.get_json_from_request(request)
+        data = request_data
         main_contact_id, company_id = self.get_main_contact_and_company_ids(
             data)
 

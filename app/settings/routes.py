@@ -13,6 +13,8 @@ from sqlmodel import Session
 from typing import List
 from settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks
+from querystring_parser import parser
+
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -78,12 +80,12 @@ def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = D
     manager.run_check()
 
 
-async def handle_hook_task(request: Request, amocrm: AmoCRM, session: Session):
-    contact_manager = ContactManager(amocrm, session)
-    company_manager = CompanyManager(amocrm, session)
+# async def handle_hook_task(request: Request, amocrm: AmoCRM, session: Session):
+    # contact_manager = ContactManager(amocrm, session)
+    # company_manager = CompanyManager(amocrm, session)
 
-    handler = HookHandler(contact_manager, company_manager, amocrm)
-    await handler.handle(request)
+    # handler = HookHandler(contact_manager, company_manager, amocrm)
+    # await handler.handle(request)
 
 
 async def test_func(body):
@@ -93,7 +95,15 @@ async def test_func(body):
 @router.post("/handle-hook")
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
     # background_tasks.add_task(handle_hook_task, request, amocrm, session)
-    body = await request.body()
-    background_tasks.add_task(test_func, body)
+    # body = await request.body()
+    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+        data = await request.body()
+        json_data = parser.parse(data, normalized=True)
+        # return json_data
     # queue = Queue()
     # queue.add_hook(request)
+        contact_manager = ContactManager(amocrm, session)
+        company_manager = CompanyManager(amocrm, session)
+
+        handler = HookHandler(contact_manager, company_manager, amocrm)
+        await handler.handle(json_data)
