@@ -1,4 +1,3 @@
-from cgitb import Hook
 from fastapi import APIRouter, Depends, Request
 from starlette.requests import ClientDisconnect
 
@@ -12,7 +11,7 @@ from settings import services
 from integrations.deps import get_session
 from sqlmodel import Session
 from typing import List
-from settings.utils import CompanyManager, ContactManager, HookHandler, Queue
+from settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks
 
 router = APIRouter(prefix="/settings", tags=["settings"])
