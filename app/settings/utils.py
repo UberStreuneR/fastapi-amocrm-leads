@@ -245,7 +245,7 @@ class HookHandler:
         lead_id = self.get_lead_id_from_data(data)
         lead = self._amocrm._make_request(
             "get", f"api/v4/leads/{lead_id}", {"with": "contacts"})
-        main_contact_id = await self.get_lead_main_contact_id(lead)
+        main_contact_id = self.get_lead_main_contact_id(lead)
         company_id = await self.get_contact_company_id(main_contact_id)
         return main_contact_id, company_id
 
