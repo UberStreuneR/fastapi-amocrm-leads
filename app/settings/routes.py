@@ -12,7 +12,7 @@ from integrations.deps import get_session
 from sqlmodel import Session
 from typing import List
 from settings.utils import CompanyManager, ContactManager, HookHandler
-from fastapi import BackgroundTasks
+from fastapi import BackgroundTasks, Response
 from querystring_parser import parser
 
 
@@ -92,18 +92,25 @@ async def test_func(body):
     print(f"\n\n{body}\n\n")
 
 
-@router.post("/handle-hook")
+async def background_request(request_body, amocrm, session):
+    contact_manager = ContactManager(amocrm, session)
+    company_manager = CompanyManager(amocrm, session)
+
+    handler = HookHandler(contact_manager, company_manager, amocrm)
+    await handler.handle(request_body)
+
+
+@router.post("/handle-hook", status_code=200)
 async def handle_hook(request: Request, background_tasks: BackgroundTasks, amocrm: AmoCRM = Depends(get_amocrm_from_first_integration), session: Session = Depends(get_session)):
-    # background_tasks.add_task(handle_hook_task, request, amocrm, session)
+
     # body = await request.body()
     if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
-        # return json_data
+        background_tasks.add_task(
+            background_request, json_data, amocrm, session)
+        return Response(status_code=200)
+    return Response(status_code=400)
+    # return json_data
     # queue = Queue()
     # queue.add_hook(request)
-        contact_manager = ContactManager(amocrm, session)
-        company_manager = CompanyManager(amocrm, session)
-
-        handler = HookHandler(contact_manager, company_manager, amocrm)
-        await handler.handle(json_data)
