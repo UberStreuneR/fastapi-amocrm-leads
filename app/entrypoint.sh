@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -z $DB_HOST ] && DB_HOST="postgres"
+[ -z $DB_HOST ] && DB_HOST="contact_level_db"
 [ -z $DB_PORT ] && DB_PORT="5433"
 
 echo "Waiting for PostgreSQL..."
