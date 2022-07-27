@@ -88,7 +88,4 @@ async def handle_hook(request: Request, amocrm: AmoCRM = Depends(get_amocrm_from
     company_manager = CompanyManager(amocrm, session)
 
     handler = HookHandler(contact_manager, company_manager, amocrm)
-    try:
-        await handler.handle(request)
-    except ClientDisconnect:
-        await handler.handle(request)
+    await handler.handle(request)
