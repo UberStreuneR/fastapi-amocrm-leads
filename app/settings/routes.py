@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Request
-from starlette.requests import ClientDisconnect
 from app.amocrm import AmoCRM
 from app.integrations.deps import get_amocrm_from_first_integration, get_amocrm, get_auth_data, get_session
 from app.settings.schemas import ContactSetting, CompanySetting, StatusSetting
@@ -8,11 +7,10 @@ from app.settings.schemas import StatusSetting
 from app.settings import services
 from sqlmodel import Session
 from typing import List
-from app.settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-from app.settings.tasks import company_check, contact_check, background_request, test_task
+from app.settings.tasks import company_check, contact_check, background_request
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -106,8 +104,3 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks):
         json_data = parser.parse(data, normalized=True)
         background_request.delay(json_data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.get("/test-task")
-def test_task_of_mine():
-    test_task.delay()
