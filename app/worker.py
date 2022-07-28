@@ -16,7 +16,7 @@ app.autodiscover_tasks(packages=['app.settings'])
 
 app.conf.task_queues = (
     Queue('settings', Exchange('settings', type='topic',
-          auto_delete=True), routing_key='worker.*'),
+          auto_delete=True), routing_key='app.settings.*'),
 )
 
 app.conf.task_routes = {"app.settings.tasks.*": {"queue": "settings"}}
