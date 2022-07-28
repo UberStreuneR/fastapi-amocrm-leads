@@ -19,4 +19,5 @@ app.conf.task_queues = (
           auto_delete=True), routing_key='app.settings.*'),
 )
 
-app.conf.task_routes = {"app.settings.tasks.*": {"queue": "settings"}}
+app.conf.task_routes = {
+    "app.settings.tasks.*": {"queue": "settings", 'routing_key': "app.settings.tasks"}}
