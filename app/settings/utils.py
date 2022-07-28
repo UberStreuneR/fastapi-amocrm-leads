@@ -180,30 +180,6 @@ class ContactManager(EntityManager):
                 self.check(contact['id'])
 
 
-# class QueueSingletonMeta(type):
-#     _instances = {}
-
-#     def __call__(cls, *args, **kwargs):
-#         if cls not in cls._instances:
-#             instance = super().__call__(*args, **kwargs)
-#             cls._instances[cls] = instance
-#         return cls._instances[cls]
-
-
-# class Queue(metaclass=QueueSingletonMeta):
-#     _hooks = []
-
-#     def add_hook(self, hook):
-#         self._hooks.append(hook)
-
-#     def get_hooks(self):
-#         while len(self._hooks) > 0:
-#             yield self.get_hook()
-
-#     def get_hook(self):
-#         return self._hooks.pop(0)
-
-
 class HookHandler:
 
     def __init__(self, contact_manager: ContactManager, company_manager: CompanyManager, amocrm: AmoCRM) -> None:
@@ -249,9 +225,7 @@ class HookHandler:
         company_id = self.get_contact_company_id(main_contact_id)
         return main_contact_id, company_id
 
-    # async def handle(self, request: Request):
     def handle(self, data):
-        # data = await self.get_json_from_request(request)
         main_contact_id, company_id = self.get_main_contact_and_company_ids(
             data)
 

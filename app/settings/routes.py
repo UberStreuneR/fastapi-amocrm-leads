@@ -12,7 +12,7 @@ from app.settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-from app.settings.tasks import company_check, contact_check, background_request
+from app.settings.tasks import company_check, contact_check, background_request, test_task
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -106,3 +106,8 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks):
         json_data = parser.parse(data, normalized=True)
         background_request.delay(json_data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/test-task")
+def test_task_of_mine():
+    test_task.delay()

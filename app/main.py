@@ -28,7 +28,7 @@ async def on_startup():
 
 
 """Для отображения docs, в силу того что дефолтный cdn не подгружается"""
-app.mount("/app/my_static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 
 @app.get("/docs", include_in_schema=False)
@@ -37,8 +37,8 @@ async def custom_swagger_ui_html():
         openapi_url=app.openapi_url,
         title=app.title + " - Swagger UI",
         oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-        swagger_js_url="/my_static/swagger-ui-bundle.js",
-        swagger_css_url="/my_static/swagger-ui.css",
+        swagger_js_url="/static/swagger-ui-bundle.js",
+        swagger_css_url="/static/swagger-ui.css",
     )
 
 
