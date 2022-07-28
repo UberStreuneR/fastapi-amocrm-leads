@@ -77,14 +77,14 @@ def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm)):
 
 @router.post("/run-contact-check")
 def run_contact_check():
-    contact_check.apply()
+    contact_check.delay()
     # manager = ContactManager(amocrm, session)
     # manager.run_check()
 
 
 @router.post("/run-company-check")
 def run_company_check():
-    company_check.apply()
+    company_check.delay()
     # manager = CompanyManager(amocrm, session)
     # manager.run_check()
 
