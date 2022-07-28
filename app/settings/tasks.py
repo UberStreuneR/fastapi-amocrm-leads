@@ -22,7 +22,7 @@ def background_request(request_data):
         session.commit()
 
 
-@app.task(name="run-contact-check", queue="setings")
+@app.task(name="run-contact-check", queue="settings")
 def contact_check():
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
@@ -31,7 +31,7 @@ def contact_check():
         session.commit()
 
 
-@app.task(name="run-company-check", queue="setings")
+@app.task(name="run-company-check", queue="settings")
 def company_check():
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
