@@ -5,12 +5,7 @@ from sqlmodel import Session
 from app.database import engine
 
 
-@app.task(name="print_number", queue="settings")
-def print_number(number: int):
-    return number
-
-
-@app.task(name="handle-hook", queue="settings")
+@app.task(name="handle-hook")
 def background_request(request_data):
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
@@ -22,7 +17,7 @@ def background_request(request_data):
         session.commit()
 
 
-@app.task(name="run-contact-check", queue="settings")
+@app.task(name="run-contact-check")
 def contact_check():
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
@@ -31,7 +26,7 @@ def contact_check():
         session.commit()
 
 
-@app.task(name="run-company-check", queue="settings")
+@app.task(name="run-company-check")
 def company_check():
     amocrm = get_amocrm_from_first_integration()
     with Session(engine) as session:
