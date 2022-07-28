@@ -12,8 +12,7 @@ from app.settings.utils import CompanyManager, ContactManager, HookHandler
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-from app.worker import print_number, background_request
-
+from app.settings.tasks import company_check, contact_check, background_request
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -67,16 +66,29 @@ def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm)):
     return amocrm.get_custom_fields()
 
 
+# @router.post("/run-contact-check")
+# def run_contact_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
+#     manager = ContactManager(amocrm, session)
+#     manager.run_check()
+
+
+# @router.post("/run-company-check")
+# def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
+#     manager = CompanyManager(amocrm, session)
+#     manager.run_check()
+
 @router.post("/run-contact-check")
-def run_contact_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-    manager = ContactManager(amocrm, session)
-    manager.run_check()
+def run_contact_check():
+    contact_check.delay()
+    # manager = ContactManager(amocrm, session)
+    # manager.run_check()
 
 
 @router.post("/run-company-check")
-def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-    manager = CompanyManager(amocrm, session)
-    manager.run_check()
+def run_company_check():
+    company_check.delay()
+    # manager = CompanyManager(amocrm, session)
+    # manager.run_check()
 
 
 # async def background_request(request_data, amocrm, session):
@@ -94,8 +106,3 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks):
         json_data = parser.parse(data, normalized=True)
         background_request.delay(json_data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.get("/celery")
-async def run_celery_task():
-    print_number.delay(42)

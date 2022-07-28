@@ -11,24 +11,7 @@ from app.database import engine
 
 app = Celery(__name__)
 app.conf.broker_url = os.environ.get("CELERY_BROKER_URL")
-# app.autodiscover_tasks(packages=['app'])
-
-
-@app.task(name="print_number", queue="settings")
-def print_number(number: int):
-    return number
-
-
-@app.task(name="handle-hook", queue="settings")
-def background_request(request_data):
-    amocrm = get_amocrm_from_first_integration()
-    with Session(engine) as session:
-        contact_manager = ContactManager(amocrm, session)
-        company_manager = CompanyManager(amocrm, session)
-
-        handler = HookHandler(contact_manager, company_manager, amocrm)
-        handler.handle(request_data)
-        session.commit()
+app.autodiscover_tasks(packages=['app.settings'])
 
 
 app.conf.task_queues = (
