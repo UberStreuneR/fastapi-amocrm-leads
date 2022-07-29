@@ -217,8 +217,9 @@ class AmoCRM:
                 success_leads.append(lead_data['price'])
             elif self.check_lead_is_active(lead_data):
                 active_leads.append(lead_data['id'])
-            if last_full_payment is None:
-                last_full_payment = self.check_lead_is_fully_paid(lead_data)
+            temp = self.check_lead_is_fully_paid(lead_data)
+            if temp is not None:
+                last_full_payment = temp
         return success_leads, active_leads, last_full_payment
 
     def get_company_success_leads(self, company_id: str, months: int):
