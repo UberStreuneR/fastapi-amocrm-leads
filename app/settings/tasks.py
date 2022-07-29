@@ -57,6 +57,8 @@ def background_request(request_data):
 
         handler = HookHandler(contact_manager, company_manager, amocrm)
         handler.handle(request_data)
+        handler._company_manager.set_many_fields()
+        handler._contact_manager_manager.set_many_fields()
         session.commit()
 
 
