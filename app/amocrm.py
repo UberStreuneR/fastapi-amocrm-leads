@@ -201,7 +201,7 @@ class AmoCRM:
     def check_lead_is_fully_paid(self, lead: dict):
         price = lead['price']
         for field in lead['custom_fields_values']:
-            if field['id'] == 1265117:
+            if field['field_id'] == 1265117:
                 if int(field['values'][0]['value']) == int(price):
                     return price
         return None
