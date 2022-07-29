@@ -40,6 +40,10 @@ class EntityManager(ABC):
         pass
 
     @abstractmethod
+    def set_field_if_different(self):
+        pass
+
+    @abstractmethod
     def apply_one_status_setting(self):
         pass
 
@@ -100,35 +104,40 @@ class CompanyManager(EntityManager):
         self._amocrm.set_many_leads_field(self._update_leads_values)
         self._update_leads_values = []
 
-    # def set_field_if_different(self, company_id: int, status_setting: StatusSetting, comparison_value: int)
-
+    def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
+        for custom_field in company_data['custom_fields_values']:
+            if custom_field['field_id'] == field_id:
+                if custom_field['values'][0]['value'] != value:
+                    self._update_values.append(
+                        {"id": company_id, "field_id": field_id, "value": value})
+                    break
     # comparison_value является либо суммой, либо количеством
-    def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int):
-        if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
-            # self.set_field(company_id,
-            #                status_setting.field_id, status_setting.status)
-            # TODO: Add check for the discrepancy between previous and to-set values
-            self._update_values.append(
-                {"id": company_id, "field_id": status_setting.field_id, "value": status_setting.status})
 
-    def apply_status_settings(self, company_id: int, sum_: int, amount: int):
+    def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int, company_data):
+        if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
+            self.set_field_if_different(
+                company_id, status_setting.field_id, status_setting.status, company_data)
+
+    def apply_status_settings(self, company_id: int, sum_: int, amount: int, company_data):
         for status_setting in self.status_settings:
             if status_setting.dependency_type == "quantity":
                 self.apply_one_status_setting(
-                    company_id, status_setting, amount)
+                    company_id, status_setting, amount, company_data)
             else:
                 self.apply_one_status_setting(
-                    company_id, status_setting, sum_)
+                    company_id, status_setting, sum_, company_data)
 
-    def check(self, company_id):
+    def check(self, company_id, company_data):
         success_leads, active_leads = self.get_success_leads(
             company_id, months=self.setting.months)
         sum_ = sum(success_leads)
         amount = len(success_leads)
-        self.apply_status_settings(company_id, sum_, amount)
-        # self.set_field(company_id, self.setting.company_field_id, sum_)
-        self._update_values.append(
-            {"id": company_id, "field_id": self.setting.company_field_id, "value": sum_})
+        self.apply_status_settings(company_id, sum_, amount, company_data)
+
+        # TODO: Оплачено == Последняя оплата компании
+
+        self.set_field_if_different(
+            company_id, self.setting.company_field_id, sum_, company_data)
         self.update_active_leads(active_leads, sum_)
 
     def run_check(self):
@@ -185,40 +194,52 @@ class ContactManager(EntityManager):
         self._amocrm.set_many_leads_field(self._update_leads_values)
         self._update_leads_values = []
 
+    def set_field_if_different(self, contact_id: int, field_id: int, value: int, contact_data):
+        for custom_field in contact_data['custom_fields_values']:
+            if custom_field['field_id'] == field_id:
+                if custom_field['values'][0]['value'] != value:
+                    self._update_values.append(
+                        {"id": contact_id, "field_id": field_id, "value": value})
+                    break
+
     # comparison_value является либо суммой, либо количеством
-    def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int):
+    def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int, contact_data):
         if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
             # self.set_field(contact_id,
             #    status_setting.field_id, status_setting.status)
-            self._update_values.append(
-                {"id": contact_id, "field_id": status_setting.field_id, "value": status_setting.status})
+            self.set_field_if_different(
+                contact_id, status_setting.field_id, status_setting.status, contact_data)
+            # self._update_values.append(
+            # {"id": contact_id, "field_id": status_setting.field_id, "value": status_setting.status})
 
-    def apply_status_settings(self, contact_id: int, sum_: int, amount: int):
+    def apply_status_settings(self, contact_id: int, sum_: int, amount: int, contact_data):
         for status_setting in self.status_settings:
             if status_setting.dependency_type == "quantity":
                 self.apply_one_status_setting(
-                    contact_id, status_setting, amount)
+                    contact_id, status_setting, amount, contact_data)
             else:
                 self.apply_one_status_setting(
-                    contact_id, status_setting, sum_)
+                    contact_id, status_setting, sum_, contact_data)
 
-    def check(self, contact_id):
+    def check(self, contact_id, contact_data):
         success_leads, active_leads = self.get_success_leads(
             contact_id, months=self.setting.months)
         sum_ = sum(success_leads)
         amount = len(success_leads)
-        self.apply_status_settings(contact_id, sum_, amount)
+        self.apply_status_settings(contact_id, sum_, amount, contact_data)
         # self.set_field(contact_id, self.setting.contact_field_id, amount)
-        self._update_values.append(
-            {"id": contact_id, "field_id": self.setting.contact_field_id, "value": amount})
+        self.set_field_if_different(
+            contact_id, self.setting.contact_field_id, amount, contact_data)
+        # self._update_values.append(
+        #     {"id": contact_id, "field_id": self.setting.contact_field_id, "value": amount})
         self.update_active_leads(active_leads, amount)
 
     def run_check(self):
         for contact in self._amocrm.get_many_contacts():
             try:
-                self.check(contact['id'])
+                self.check(contact['id'], contact)
             except ClientDisconnect:
-                self.check(contact['id'])
+                self.check(contact['id'], contact)
         self.set_many_fields()
 
 

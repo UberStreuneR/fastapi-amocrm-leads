@@ -144,6 +144,18 @@ class AmoCRM:
             "get", f"/api/v4/contacts/{contact_id}", data)
         return response['_embedded']['leads']
 
+    def get_company(self, company_id: str):
+        data = {"with": "leads"}
+        response = self._make_request(
+            "get", f"/api/v4/companies/{company_id}", data)
+        return response
+
+    # def get_company_leads(self, company_data):
+    #     return company_data['_embedded']['leads']
+
+    # def get_company_custom_fields(self, company_data) -> List[dict]:
+    #     return company_data['custom_fields_values']
+
     def get_company_leads(self, company_id: str):
         data = {"with": "leads"}
         response = self._make_request(
@@ -235,7 +247,8 @@ class AmoCRM:
         return self._make_request("patch", f"api/v4/companies/{company_id}", json.dumps(data))
 
     def set_many_companies_field(self, entries: List[dict]):
-        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+        print(
+            f"(many_companies) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/companies", json.dumps(data))
 
@@ -245,7 +258,8 @@ class AmoCRM:
         return self._make_request("patch", f"api/v4/contacts/{contact_id}", json.dumps(data))
 
     def set_many_contacts_field(self, entries: List[dict]):
-        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+        print(
+            f"(many_contacts) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/contacts", json.dumps(data))
 
@@ -255,7 +269,8 @@ class AmoCRM:
         return self._make_request("patch", f"api/v4/leads/{lead_id}", json.dumps(data))
 
     def set_many_leads_field(self, entries: List[dict]):
-        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+        print(
+            f"(many_leads) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/leads", json.dumps(data))
 
