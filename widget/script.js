@@ -170,6 +170,7 @@ define(["./templates.js"], function (templatesRenderer) {
     addContactTabButtonListeners() {
       var saveButton = document.querySelector("#contact-tab #save");
       var runCheck = document.querySelector("#contact-tab #runCheck");
+
       var contactMonths = document.querySelector(
         "#contact-tab input[name=contact_input_months]"
       );
@@ -200,16 +201,23 @@ define(["./templates.js"], function (templatesRenderer) {
             contact_field_id: contactField,
           },
           successful: response => {
+            saveButton.innerText = "Сохранено";
+            //TODO: add some styles
             // alert(JSON.stringify(response));
             // console.log(response);
           },
         });
       });
       runCheck.addEventListener("click", () => {
+        var companyRunCheck = document.querySelector("#company-tab #runCheck");
         this.makeRequest({
           method: "post",
           path: "settings/run-contact-check",
           successful: response => {
+            runCheck.innerText = "Выполняется проверка";
+            companyRunCheck.disabled = true;
+            //TODO:add some styles
+            //TODO:save state of the button
             // alert(JSON.stringify(response));
             // console.log(response);
           },
@@ -220,6 +228,7 @@ define(["./templates.js"], function (templatesRenderer) {
     addCompanyTabButtonListeners() {
       var saveButton = document.querySelector("#company-tab #save");
       var runCheck = document.querySelector("#company-tab #runCheck");
+
       var companyMonths = document.querySelector(
         "#company-tab input[name=company_input_months]"
       );
@@ -230,6 +239,7 @@ define(["./templates.js"], function (templatesRenderer) {
         "#company-tab input[name=company_select_lead_field]"
       );
       saveButton.addEventListener("click", () => {
+        //TODO: add some css
         var months = companyMonths.value;
         var companyField = companySelect.value;
         var leadField = companySelectLead.value;
@@ -250,16 +260,23 @@ define(["./templates.js"], function (templatesRenderer) {
             company_field_id: companyField,
           },
           successful: response => {
+            saveButton.innerText = "Сохранено";
+            //TODO: add some css
+            //TODO:save state of the button
             // alert(JSON.stringify(response));
             // console.log(response);
           },
         });
       });
       runCheck.addEventListener("click", () => {
+        var contactRunCheck = document.querySelector("#contact-tab #runCheck");
         this.makeRequest({
           method: "post",
           path: "settings/run-company-check",
           successful: response => {
+            runCheck.innerText = "Выполняется проверка";
+            contactRunCheck.disabled = true;
+            //TODO: add some styles
             // alert(JSON.stringify(response));
             // console.log(response);
           },

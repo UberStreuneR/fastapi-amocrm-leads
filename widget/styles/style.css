@@ -49,3 +49,39 @@ hr {
     transform: rotate(360deg);
   }
 }
+
+#contact-tab-buttons button,
+#company-tab-buttons button {
+  padding: 1rem;
+  border-radius: 4px;
+  /* width: 11rem; */
+  height: 30px;
+  margin-top: 1rem;
+  margin-left: 7px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+#contact-tab-buttons button:active,
+#company-tab-buttons button:active {
+  transform: scale(0.9);
+}
+
+#runCheck {
+  background-color: #c4c4c4;
+  /* width: 11.5rem; */
+}
+#runCheck:disabled {
+  pointer-events: none;
+}
+
+#save {
+  background-color: #4b79bb;
+  /* width: 6rem; */
+  color: white;
+}
+#save:active {
+  background-color: #295799;
+}

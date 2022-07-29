@@ -1,4 +1,4 @@
-from app.settings.schemas import StatusSetting, ContactSetting, CompanySetting
+from app.settings.schemas import StatusSetting, ContactSetting, CompanySetting, ContactCheckStatus, CompanyCheckStatus
 from sqlmodel import Session
 from typing import List
 
@@ -57,3 +57,35 @@ def set_company_setting(session: Session, company_setting: CompanySetting) -> Co
         data.update({"id": instance.id})
         instance.update(session, **data)
     return instance
+
+
+def set_contact_check_status(session: Session, running: bool):
+    instance = session.query(ContactCheckStatus).first()
+    if instance is None:
+        instance = ContactCheckStatus.create(session, running=running)
+    else:
+        instance.update(session, running=running)
+    return instance
+
+
+def get_contact_check_status(session: Session):
+    instance = session.query(ContactCheckStatus).first()
+    if instance is None:
+        return False
+    return instance.running
+
+
+def set_company_check_status(session: Session, running: bool):
+    instance = session.query(CompanyCheckStatus).first()
+    if instance is None:
+        instance = CompanyCheckStatus.create(session, running=running)
+    else:
+        instance.update(session, running=running)
+    return instance
+
+
+def get_company_check_status(session: Session):
+    instance = session.query(CompanyCheckStatus).first()
+    if instance is None:
+        return False
+    return instance.running

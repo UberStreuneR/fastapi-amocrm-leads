@@ -10,7 +10,9 @@ from typing import List
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-from app.settings.tasks import company_check, contact_check, background_request
+from app.settings.tasks import company_check, contact_check, background_request, test_task
+from celery import chain
+
 
 router = APIRouter(prefix="/settings", tags=["settings"])
 
@@ -104,3 +106,18 @@ async def handle_hook(request: Request, background_tasks: BackgroundTasks):
         json_data = parser.parse(data, normalized=True)
         background_request.delay(json_data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get("/contact-check-status")
+def contact_check_status(session: Session = Depends(get_session)):
+    return services.get_contact_check_status(session)
+
+
+@router.get("/company-check-status")
+def contact_check_status(session: Session = Depends(get_session)):
+    return services.get_company_check_status(session)
+
+
+@router.get("/test-task")
+def run_test_task():
+    test_task.delay()

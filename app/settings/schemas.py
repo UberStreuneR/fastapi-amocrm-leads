@@ -32,3 +32,13 @@ class CompanySetting(DatabaseModel, BaseSetting, table=True):
     """Настройки на вкладке Количество сделок у контакта"""
 
     company_field_id: int
+
+
+class ContactCheckStatus(DatabaseModel, BaseModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    running: bool = False
+
+
+class CompanyCheckStatus(DatabaseModel, BaseModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    running: bool = False
