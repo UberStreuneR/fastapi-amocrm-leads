@@ -111,10 +111,10 @@ class CompanyManager(EntityManager):
 
         for custom_field in company_data['custom_fields_values']:
             if int(custom_field['field_id']) == int(field_id):
-                if custom_field['values'][0]['value'] != value:
-                    for value in self._update_values:
-                        if value['id'] == company_id:
-                            value['custom_fields_values'].append(
+                if str(custom_field['values'][0]['value']) != str(value):
+                    for update_value in self._update_values:
+                        if update_value['id'] == company_id:
+                            update_value['custom_fields_values'].append(
                                 {"field_id": field_id, "values": [{'value': value}]})
                             return
                     self._update_values.append(
