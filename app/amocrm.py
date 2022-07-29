@@ -202,7 +202,7 @@ class AmoCRM:
         price = lead['price']
         for field in lead['custom_fields_values']:
             if field['id'] == 1265117:
-                if field['values'][0]['value'] == price:
+                if int(field['values'][0]['value']) == int(price):
                     return price
         return None
 
