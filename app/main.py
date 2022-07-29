@@ -7,6 +7,7 @@ from fastapi.openapi.docs import (
 from starlette.middleware.cors import CORSMiddleware
 from app.integrations.routes import router as integrations_router
 from app.settings.routes import router as settings_router
+from app.settings import services
 from sqlmodel import SQLModel
 from app.database import engine
 
@@ -25,7 +26,8 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup():
     SQLModel.metadata.create_all(engine)
-
+    services.set_company_check_status(False)
+    services.set_contact_check_status(False)
 
 """Для отображения docs, в силу того что дефолтный cdn не подгружается"""
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
