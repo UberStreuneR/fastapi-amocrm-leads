@@ -88,7 +88,7 @@ class CompanyManager(EntityManager):
         return self._amocrm.set_company_field(entity_id, field_id, value)
 
     def set_many_fields(self):
-        if len(self._update_values > 0):
+        if len(self._update_values) > 0:
             self._amocrm.set_many_companies_field(self._update_values)
             self._update_values = []
 
@@ -178,7 +178,7 @@ class ContactManager(EntityManager):
         return self._amocrm.set_contact_field(entity_id, field_id, value)
 
     def set_many_fields(self):
-        if len(self._update_values > 0):
+        if len(self._update_values) > 0:
             self._amocrm.set_many_contacts_field(self._update_values)
             self._update_values = []
 
