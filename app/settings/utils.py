@@ -101,8 +101,9 @@ class CompanyManager(EntityManager):
             #                             self.setting.lead_field_id, sum_)
             self._update_leads_values.append(
                 {"id": lead, "field_id": self.setting.lead_field_id, "value": sum_})
-        self._amocrm.set_many_leads_field(self._update_leads_values)
-        self._update_leads_values = []
+        if len(self._update_leads_values) > 0:
+            self._amocrm.set_many_leads_field(self._update_leads_values)
+            self._update_leads_values = []
 
     def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
         for custom_field in company_data['custom_fields_values']:
@@ -178,7 +179,6 @@ class ContactManager(EntityManager):
 
     def set_many_fields(self):
         if len(self._update_values > 0):
-            print(f"\n\nUPDATE_VALUES: {self._update_values}\n\n")
             self._amocrm.set_many_contacts_field(self._update_values)
             self._update_values = []
 
@@ -192,8 +192,9 @@ class ContactManager(EntityManager):
         for lead in leads:
             self._update_leads_values.append(
                 {"id": lead, "field_id": self.setting.lead_field_id, "value": amount})
-        self._amocrm.set_many_leads_field(self._update_leads_values)
-        self._update_leads_values = []
+        if len(self._update_leads_values) > 0:
+            self._amocrm.set_many_leads_field(self._update_leads_values)
+            self._update_leads_values = []
 
     def set_field_if_different(self, contact_id: int, field_id: int, value: int, contact_data):
         for custom_field in contact_data['custom_fields_values']:
@@ -228,11 +229,8 @@ class ContactManager(EntityManager):
         sum_ = sum(success_leads)
         amount = len(success_leads)
         self.apply_status_settings(contact_id, sum_, amount, contact_data)
-        # self.set_field(contact_id, self.setting.contact_field_id, amount)
         self.set_field_if_different(
             contact_id, self.setting.contact_field_id, amount, contact_data)
-        # self._update_values.append(
-        #     {"id": contact_id, "field_id": self.setting.contact_field_id, "value": amount})
         self.update_active_leads(active_leads, amount)
 
     def run_check(self):
