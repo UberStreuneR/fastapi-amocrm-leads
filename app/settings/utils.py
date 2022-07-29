@@ -277,7 +277,7 @@ class HookHandler:
         try:
             return contact_companies[0]['id'], contact_data
         except IndexError:
-            return None
+            return None, None
 
     def get_main_contact_and_company_ids(self, data):
         lead_id = self.get_lead_id_from_data(data)

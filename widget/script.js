@@ -501,6 +501,7 @@ define(["./templates.js"], function (templatesRenderer) {
             companyRunCheck.disabled = true;
             companyRunCheck.innerText = "Выполняется проверка";
             var saveBtns = document.querySelectorAll("button#save");
+            alert(saveBtns);
             saveBtns.forEach(btn => (btn.disabled = true));
           }
         },
