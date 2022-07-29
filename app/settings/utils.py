@@ -109,8 +109,6 @@ class CompanyManager(EntityManager):
         for custom_field in company_data['custom_fields_values']:
             if int(custom_field['field_id']) == int(field_id):
                 if int(custom_field['values'][0]['value']) != int(value):
-                    print(custom_field['field_id'], field_id,
-                          custom_field['values'][0]['value'], value)
                     for value in self._update_values:
                         if value['id'] == company_id:
                             value['custom_fields_values'].append(
@@ -147,6 +145,7 @@ class CompanyManager(EntityManager):
         self.set_field_if_different(
             company_id, self.setting.company_field_id, sum_, company_data)
         self.update_active_leads(active_leads, sum_)
+        self.set_many_fields()
 
     def run_check(self):
         for company in self._amocrm.get_many_companies():
@@ -154,7 +153,6 @@ class CompanyManager(EntityManager):
                 self.check(company['id'], company)
             except ClientDisconnect:
                 self.check(company['id'], company)
-        self.set_many_fields()
 
 
 class ContactManager(EntityManager):
@@ -239,6 +237,7 @@ class ContactManager(EntityManager):
         self.set_field_if_different(
             contact_id, self.setting.contact_field_id, amount, contact_data)
         self.update_active_leads(active_leads, amount)
+        self.set_many_fields()
 
     def run_check(self):
         for contact in self._amocrm.get_many_contacts():
@@ -246,7 +245,6 @@ class ContactManager(EntityManager):
                 self.check(contact['id'], contact)
             except ClientDisconnect:
                 self.check(contact['id'], contact)
-        self.set_many_fields()
 
 
 class HookHandler:
