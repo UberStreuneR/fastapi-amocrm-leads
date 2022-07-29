@@ -250,6 +250,7 @@ class AmoCRM:
         print(
             f"(many_companies) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_many_patch_request_data(entries)
+        print(f"\n\nData {data}\n\n")
         return self._make_request("patch", f"api/v4/companies", json.dumps(data))
 
     def set_contact_field(self, contact_id: int, contact_field_id: int, value: int):

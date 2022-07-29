@@ -85,3 +85,8 @@ hr {
 #save:active {
   background-color: #295799;
 }
+
+#save:disabled {
+  background-color: #7eacee !important;
+  pointer-events: none;
+}

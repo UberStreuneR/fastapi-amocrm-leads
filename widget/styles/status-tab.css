@@ -61,10 +61,10 @@
   border: 1px solid lightgrey;
 }
 
-#status-tab-buttons #save {
+/* #status-tab-buttons #save {
   background-color: #4b79bb;
   color: white;
-}
+} */
 
 .control--select--list-opened {
   min-width: 100%;
