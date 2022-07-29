@@ -153,6 +153,7 @@ class CompanyManager(EntityManager):
         self.apply_status_settings(company_id, sum_, amount, company_data)
 
         # TODO: Оплачено == Последняя оплата компании
+        print(f"\n\n\nLAST FULL PAYMENT {last_full_payment}\n\n\n")
         if last_full_payment is not None:
             self.set_field(company_id, 1265119, last_full_payment)
 
