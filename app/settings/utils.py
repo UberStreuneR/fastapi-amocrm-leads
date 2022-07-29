@@ -314,6 +314,10 @@ class HookHandler:
         company_id, contact_data = self.get_contact_company_id(main_contact_id)
         return main_contact_id, company_id, contact_data
 
+    def set_many_fields(self):
+        self._company_manager.set_many_fields()
+        self._contact_manager.set_many_fields()
+
     def handle(self, data):
         main_contact_id, company_id, contact_data = self.get_main_contact_and_company_ids(
             data)

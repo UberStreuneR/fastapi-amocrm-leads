@@ -134,7 +134,7 @@ class AmoCRM:
 
             return self._make_request(method, path, data)
 
-        if response.status_code != 200 and response.status_code != 201:
+        if response.status_code >= 300:
             raise UnexpectedResponse(response)
         return response.json()
 
