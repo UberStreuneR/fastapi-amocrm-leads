@@ -28,6 +28,10 @@ class EntityManager(ABC):
         pass
 
     @abstractmethod
+    def set_many_fields(self):
+        pass
+
+    @abstractmethod
     def get_success_leads(self):
         pass
 
@@ -59,6 +63,9 @@ class CompanyManager(EntityManager):
         self._session = session
         self._setting: CompanySetting = None
         self._status_settings: List[StatusSetting] = None
+        # [{"id": ..., "field_id": ..., "value": ...}, ...]
+        self._update_values = []
+        self._update_leads_values = []
 
     @property
     def setting(self):
@@ -76,19 +83,33 @@ class CompanyManager(EntityManager):
     def set_field(self, entity_id, field_id, value):
         return self._amocrm.set_company_field(entity_id, field_id, value)
 
+    def set_many_fields(self):
+        if len(self._update_values > 0):
+            self._amocrm.set_many_companies_field(self._update_values)
+            self._update_values = []
+
     def get_success_leads(self, company_id: int, months: int):
         return self._amocrm.get_company_success_leads(company_id, months)
 
     def update_active_leads(self, leads: List[int], sum_: int):
         for lead in leads:
-            self._amocrm.set_lead_field(lead,
-                                        self.setting.lead_field_id, sum_)
+            # self._amocrm.set_lead_field(lead,
+            #                             self.setting.lead_field_id, sum_)
+            self._update_leads_values.append(
+                {"id": lead, "field_id": self.setting.lead_field_id, "value": sum_})
+        self._amocrm.set_many_leads_field(self._update_leads_values)
+        self._update_leads_values = []
+
+    # def set_field_if_different(self, company_id: int, status_setting: StatusSetting, comparison_value: int)
 
     # comparison_value является либо суммой, либо количеством
     def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int):
         if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
-            self.set_field(company_id,
-                           status_setting.field_id, status_setting.status)
+            # self.set_field(company_id,
+            #                status_setting.field_id, status_setting.status)
+            # TODO: Add check for the discrepancy between previous and to-set values
+            self._update_values.append(
+                {"id": company_id, "field_id": status_setting.field_id, "value": status_setting.status})
 
     def apply_status_settings(self, company_id: int, sum_: int, amount: int):
         for status_setting in self.status_settings:
@@ -105,15 +126,18 @@ class CompanyManager(EntityManager):
         sum_ = sum(success_leads)
         amount = len(success_leads)
         self.apply_status_settings(company_id, sum_, amount)
-        self.set_field(company_id, self.setting.company_field_id, sum_)
+        # self.set_field(company_id, self.setting.company_field_id, sum_)
+        self._update_values.append(
+            {"id": company_id, "field_id": self.setting.company_field_id, "value": sum_})
         self.update_active_leads(active_leads, sum_)
 
     def run_check(self):
         for company in self._amocrm.get_many_companies():
             try:
-                self.check(company['id'])
+                self.check(company['id'], company)
             except ClientDisconnect:
-                self.check(company['id'])
+                self.check(company['id'], company)
+        self.set_many_fields()
 
 
 class ContactManager(EntityManager):
@@ -123,6 +147,9 @@ class ContactManager(EntityManager):
         self._session = session
         self._setting: ContactSetting = None
         self._status_settings: List[StatusSetting] = None
+        # [{"id": ..., "field_id": ..., "value": ...}, ...]
+        self._update_values = []
+        self._update_leads_values = []
 
     @property
     def setting(self):
@@ -140,19 +167,31 @@ class ContactManager(EntityManager):
     def set_field(self, entity_id, field_id, value):
         return self._amocrm.set_contact_field(entity_id, field_id, value)
 
+    def set_many_fields(self):
+        if len(self._update_values > 0):
+            self._amocrm.set_many_contacts_field(self._update_values)
+            self._update_values = []
+
     def get_success_leads(self, contact_id: int, months: int):
         return self._amocrm.get_contact_success_leads(contact_id, months)
 
     def update_active_leads(self, leads: List[int], amount: int):
+        # for lead in leads:
+        #     self._amocrm.set_lead_field(lead,
+        #                                 self.setting.lead_field_id, amount)
         for lead in leads:
-            self._amocrm.set_lead_field(lead,
-                                        self.setting.lead_field_id, amount)
+            self._update_leads_values.append(
+                {"id": lead, "field_id": self.setting.lead_field_id, "value": amount})
+        self._amocrm.set_many_leads_field(self._update_leads_values)
+        self._update_leads_values = []
 
     # comparison_value является либо суммой, либо количеством
     def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int):
         if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
-            self.set_field(contact_id,
-                           status_setting.field_id, status_setting.status)
+            # self.set_field(contact_id,
+            #    status_setting.field_id, status_setting.status)
+            self._update_values.append(
+                {"id": contact_id, "field_id": status_setting.field_id, "value": status_setting.status})
 
     def apply_status_settings(self, contact_id: int, sum_: int, amount: int):
         for status_setting in self.status_settings:
@@ -169,7 +208,9 @@ class ContactManager(EntityManager):
         sum_ = sum(success_leads)
         amount = len(success_leads)
         self.apply_status_settings(contact_id, sum_, amount)
-        self.set_field(contact_id, self.setting.contact_field_id, amount)
+        # self.set_field(contact_id, self.setting.contact_field_id, amount)
+        self._update_values.append(
+            {"id": contact_id, "field_id": self.setting.contact_field_id, "value": amount})
         self.update_active_leads(active_leads, amount)
 
     def run_check(self):
@@ -178,6 +219,7 @@ class ContactManager(EntityManager):
                 self.check(contact['id'])
             except ClientDisconnect:
                 self.check(contact['id'])
+        self.set_many_fields()
 
 
 class HookHandler:

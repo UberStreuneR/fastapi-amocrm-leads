@@ -184,7 +184,6 @@ define(["./templates.js"], function (templatesRenderer) {
         var months = contactMonths.value;
         var contactField = contactSelect.value;
         var leadField = contactSelectLead.value;
-        // alert(months + " " + contactField + " " + leadField);
         if (!Number.isInteger(parseFloat(months))) {
           AMOCRM.notifications.show_message({
             header: this.widget.langs.widget.name,
@@ -202,9 +201,6 @@ define(["./templates.js"], function (templatesRenderer) {
           },
           successful: response => {
             saveButton.innerText = "Сохранено";
-            //TODO: add some styles
-            // alert(JSON.stringify(response));
-            // console.log(response);
           },
         });
       });
@@ -215,11 +211,8 @@ define(["./templates.js"], function (templatesRenderer) {
           path: "settings/run-contact-check",
           successful: response => {
             runCheck.innerText = "Выполняется проверка";
+            runCheck.disabled = true;
             companyRunCheck.disabled = true;
-            //TODO:add some styles
-            //TODO:save state of the button
-            // alert(JSON.stringify(response));
-            // console.log(response);
           },
         });
       });
@@ -243,7 +236,6 @@ define(["./templates.js"], function (templatesRenderer) {
         var months = companyMonths.value;
         var companyField = companySelect.value;
         var leadField = companySelectLead.value;
-        // alert(months + " " + companyField + " " + leadField);
         if (!Number.isInteger(parseFloat(months))) {
           AMOCRM.notifications.show_message({
             header: this.widget.langs.widget.name,
@@ -261,10 +253,6 @@ define(["./templates.js"], function (templatesRenderer) {
           },
           successful: response => {
             saveButton.innerText = "Сохранено";
-            //TODO: add some css
-            //TODO:save state of the button
-            // alert(JSON.stringify(response));
-            // console.log(response);
           },
         });
       });
@@ -275,10 +263,8 @@ define(["./templates.js"], function (templatesRenderer) {
           path: "settings/run-company-check",
           successful: response => {
             runCheck.innerText = "Выполняется проверка";
+            runCheck.disabled = true;
             contactRunCheck.disabled = true;
-            //TODO: add some styles
-            // alert(JSON.stringify(response));
-            // console.log(response);
           },
         });
       });
@@ -429,60 +415,101 @@ define(["./templates.js"], function (templatesRenderer) {
         });
     }
 
-    renderContactTab(callback) {
-      const { contactNumericItems, leadItems } = this.returnItems();
-      const contactTab = $("#contact-tab");
-      this.requestSavedContactSettings().then(settings => {
-        try {
-          const selectedContactField = settings["contact_field_id"];
-          const selectedLeadField = settings["lead_field_id"];
-          const months = settings["months"];
-          var values = { selectedContactField, selectedLeadField, months };
-        } catch (error) {
-          var values = {};
-        }
-        this.getTemplate("contact-tab")
-          .then(contactTemplate =>
-            contactTemplate.render({
-              contactFieldOptions: contactNumericItems,
-              contactLeadFieldOptions: leadItems,
-              ...values,
-            })
-          )
-          .then(result => {
-            contactTab.append($(result));
-            callback();
-          });
-      });
-    }
-
-    renderCompanyTab(callback) {
-      const { companyNumericItems, leadItems } = this.returnItems();
-      const companyTab = $("#company-tab");
-      this.requestSavedCompanySettings().then(settings => {
-        try {
-          const selectedCompanyField = settings["company_field_id"];
-          const selectedLeadField = settings["lead_field_id"];
-          const months = settings["months"];
-          var values = { selectedCompanyField, selectedLeadField, months };
-        } catch (error) {
-          // alert(error);
-          var values = {};
-        }
-        this.getTemplate("company-tab")
-          .then(companyTemplate =>
-            $(
-              companyTemplate.render({
-                companyFieldOptions: companyNumericItems,
-                companyLeadFieldOptions: leadItems,
+    promiseRenderContactTab() {
+      const promise = new Promise((resolve, reject) => {
+        const { contactNumericItems, leadItems } = this.returnItems();
+        const contactTab = $("#contact-tab");
+        this.requestSavedContactSettings().then(settings => {
+          try {
+            const selectedContactField = settings["contact_field_id"];
+            const selectedLeadField = settings["lead_field_id"];
+            const months = settings["months"];
+            var values = { selectedContactField, selectedLeadField, months };
+          } catch (error) {
+            var values = {};
+          }
+          this.getTemplate("contact-tab")
+            .then(contactTemplate =>
+              contactTemplate.render({
+                contactFieldOptions: contactNumericItems,
+                contactLeadFieldOptions: leadItems,
                 ...values,
               })
             )
-          )
-          .then(result => {
-            companyTab.append(result);
-            callback();
-          });
+            .then(result => {
+              contactTab.append($(result));
+              // callback();
+              resolve();
+            });
+        });
+      });
+      return promise;
+    }
+    promiseRenderCompanyTab() {
+      const promise = new Promise((resolve, reject) => {
+        const { companyNumericItems, leadItems } = this.returnItems();
+        const companyTab = $("#company-tab");
+        this.requestSavedCompanySettings().then(settings => {
+          try {
+            const selectedCompanyField = settings["company_field_id"];
+            const selectedLeadField = settings["lead_field_id"];
+            const months = settings["months"];
+            var values = { selectedCompanyField, selectedLeadField, months };
+          } catch (error) {
+            // alert(error);
+            var values = {};
+          }
+          this.getTemplate("company-tab")
+            .then(companyTemplate =>
+              $(
+                companyTemplate.render({
+                  companyFieldOptions: companyNumericItems,
+                  companyLeadFieldOptions: leadItems,
+                  ...values,
+                })
+              )
+            )
+            .then(result => {
+              companyTab.append(result);
+              // callback();
+              resolve();
+            });
+        });
+      });
+      return promise;
+    }
+    renderContactAndCompanyTabs() {
+      return Promise.all([
+        this.promiseRenderContactTab(),
+        this.promiseRenderCompanyTab(),
+      ]);
+    }
+    disableRunCheckIfRunning() {
+      var contactRunCheck = document.querySelector("#contact-tab #runCheck");
+      var companyRunCheck = document.querySelector("#company-tab #runCheck");
+      this.makeRequest({
+        method: "get",
+        path: "settings/contact-check-status",
+        successful: response => {
+          if (response == true) {
+            contactRunCheck.disabled = true;
+            contactRunCheck.innerText = "Выполняется проверка";
+            companyRunCheck.disabled = true;
+            companyRunCheck.innerText = "Выполняется проверка";
+          }
+        },
+      });
+      this.makeRequest({
+        method: "get",
+        path: "settings/company-check-status",
+        successful: response => {
+          if (response == true) {
+            contactRunCheck.disabled = true;
+            contactRunCheck.innerText = "Выполняется проверка";
+            companyRunCheck.disabled = true;
+            companyRunCheck.innerText = "Выполняется проверка";
+          }
+        },
       });
     }
 
@@ -562,12 +589,8 @@ define(["./templates.js"], function (templatesRenderer) {
         method: "get",
         path: "settings/get-custom-fields",
         successful: response => {
-          // this.companyFields = response["companyFields"];
-          // this.contactFields = response["contactFields"];
-          // alert(JSON.stringify(response));
           this.leadFields = response["leadFields"];
 
-          //TODO:
           this.companyStringFields = response["companyStringFields"];
           this.companyNumericFields = response["companyNumericFields"];
           this.contactStringFields = response["contactStringFields"];
@@ -576,9 +599,11 @@ define(["./templates.js"], function (templatesRenderer) {
           this.renderSkeleton(() => {
             this.removeLoadingIcon();
             this.addTabButtonsListeners();
-            // this.addTestRequestButtonListener();
-            this.renderContactTab(() => this.addContactTabButtonListeners());
-            this.renderCompanyTab(() => this.addCompanyTabButtonListeners());
+            this.renderContactAndCompanyTabs().then(() => {
+              this.addContactTabButtonListeners();
+              this.addCompanyTabButtonListeners();
+              this.disableRunCheckIfRunning();
+            });
             this.renderStatusTab(() => this.addStatusTabButtonListeners());
           });
         },

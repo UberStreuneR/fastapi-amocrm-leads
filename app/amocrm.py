@@ -150,6 +150,11 @@ class AmoCRM:
             "get", f"/api/v4/companies/{company_id}", data)
         return response['_embedded']['leads']
 
+    def get_company_custom_fields(self, company_id: str) -> List[dict]:
+        response = self._make_request(
+            "get", f"/api/v4/companies/{company_id}")
+        return response['custom_fields_values']
+
     def get_lead(self, lead_path: str):
         return self._make_request("get", lead_path)
 
@@ -215,21 +220,44 @@ class AmoCRM:
 
         return data
 
+    def _make_many_patch_request_data(self, entries: List[dict]):
+        data = []
+        for entry in entries:
+            entry_data = {"id": entry['id']}
+            entry_data.update(self._make_patch_request_data(
+                entry['field_id'], entry['value']))
+            data.append(entry_data)
+        return data
+
     def set_company_field(self, company_id: int, company_field_id: int, value: int):
         print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_patch_request_data(company_field_id, value)
         return self._make_request("patch", f"api/v4/companies/{company_id}", json.dumps(data))
+
+    def set_many_companies_field(self, entries: List[dict]):
+        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+        data = self._make_many_patch_request_data(entries)
+        return self._make_request("patch", f"api/v4/companies", json.dumps(data))
 
     def set_contact_field(self, contact_id: int, contact_field_id: int, value: int):
         print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
         data = self._make_patch_request_data(contact_field_id, value)
         return self._make_request("patch", f"api/v4/contacts/{contact_id}", json.dumps(data))
 
+    def set_many_contacts_field(self, entries: List[dict]):
+        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+        data = self._make_many_patch_request_data(entries)
+        return self._make_request("patch", f"api/v4/contacts", json.dumps(data))
+
     def set_lead_field(self, lead_id: int, lead_field_id: int, value: int):
         print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
-        assert type(lead_field_id) == int
         data = self._make_patch_request_data(lead_field_id, value)
         return self._make_request("patch", f"api/v4/leads/{lead_id}", json.dumps(data))
+
+    def set_many_leads_field(self, entries: List[dict]):
+        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+        data = self._make_many_patch_request_data(entries)
+        return self._make_request("patch", f"api/v4/leads", json.dumps(data))
 
     def _get_many(
         self, entity: str, path: str, params: dict = None, limit: int = 50
