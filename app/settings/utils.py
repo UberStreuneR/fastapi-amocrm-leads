@@ -111,9 +111,14 @@ class CompanyManager(EntityManager):
                 if int(custom_field['values'][0]['value']) != int(value):
                     print(custom_field['field_id'], field_id,
                           custom_field['values'][0]['value'], value)
+                    for value in self._update_values:
+                        if value['id'] == company_id:
+                            value['custom_fields_values'].append(
+                                {"field_id": field_id, "values": [{'value': value}]})
+                            return
                     self._update_values.append(
                         {"id": company_id, "field_id": field_id, "value": value})
-                    break
+                    return
     # comparison_value является либо суммой, либо количеством
 
     def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int, company_data):
