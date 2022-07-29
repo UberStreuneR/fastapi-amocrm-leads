@@ -107,6 +107,8 @@ class CompanyManager(EntityManager):
             self._update_leads_values = []
 
     def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
+        print(f"\n\n{company_id}\n{field_id}\n{value}\n{company_data}")
+
         for custom_field in company_data['custom_fields_values']:
             if int(custom_field['field_id']) == int(field_id):
                 if custom_field['values'][0]['value'] != value:
