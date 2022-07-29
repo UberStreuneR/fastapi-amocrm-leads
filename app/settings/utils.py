@@ -106,25 +106,26 @@ class CompanyManager(EntityManager):
             self._amocrm.set_many_leads_field(self._update_leads_values)
             self._update_leads_values = []
 
-    def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
-        # print(f"\n\n{company_id}\n{field_id}\n{value}\n{company_data}")
+    def update_or_append_values(self, company_id, field_id, value):
+        for update_value in self._update_values:
+            if update_value['id'] == company_id:
+                update_value['custom_fields_values'].append(
+                    {"field_id": field_id, "values": [{'value': value}]})
+                return
+        self._update_values.append(
+            {"id": company_id, "field_id": field_id, "value": value})
 
+    def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
         for custom_field in company_data['custom_fields_values']:
             if int(custom_field['field_id']) == int(field_id):
                 if str(custom_field['values'][0]['value']) != str(value):
                     print(
                         f"\n\nSAME VALUE: {custom_field['values'][0]['value']} = {value}\n\n")
-                    for update_value in self._update_values:
-                        if update_value['id'] == company_id:
-                            update_value['custom_fields_values'].append(
-                                {"field_id": field_id, "values": [{'value': value}]})
-                            return
-                    self._update_values.append(
-                        {"id": company_id, "field_id": field_id, "value": value})
-                    return
+                    self.update_or_append_values(company_id, field_id, value)
+                return
+        # если нет полей с таким id
         self._update_values.append(
             {"id": company_id, "field_id": field_id, "value": value})
-    # comparison_value является либо суммой, либо количеством
 
     def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int, company_data):
         if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
