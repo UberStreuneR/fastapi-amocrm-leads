@@ -146,13 +146,15 @@ class CompanyManager(EntityManager):
                     company_id, status_setting, sum_, company_data)
 
     def check(self, company_id, company_data):
-        success_leads, active_leads = self.get_success_leads(
+        success_leads, active_leads, last_full_payment = self.get_success_leads(
             company_id, months=self.setting.months)
         sum_ = sum(success_leads)
         amount = len(success_leads)
         self.apply_status_settings(company_id, sum_, amount, company_data)
 
         # TODO: Оплачено == Последняя оплата компании
+        if last_full_payment is not None:
+            self.set_field(company_id, 1265119, last_full_payment)
 
         self.set_field_if_different(
             company_id, self.setting.company_field_id, sum_, company_data)
@@ -255,7 +257,7 @@ class ContactManager(EntityManager):
                     contact_id, status_setting, sum_, contact_data)
 
     def check(self, contact_id, contact_data):
-        success_leads, active_leads = self.get_success_leads(
+        success_leads, active_leads, _ = self.get_success_leads(
             contact_id, months=self.setting.months)
         sum_ = sum(success_leads)
         amount = len(success_leads)

@@ -198,9 +198,18 @@ class AmoCRM:
             return True
         return False
 
+    def check_lead_is_fully_paid(self, lead: dict):
+        price = lead['price']
+        for field in lead['custom_fields_values']:
+            if field['id'] == 1265117:
+                if field['values'][0]['value'] == price:
+                    return price
+        return None
+
     def get_success_and_active_leads(self, months, leads):
         success_leads = []
         active_leads = []
+        last_full_payment = None
         for lead in leads:
             lead_path = self.get_lead_path(lead['_links']['self']['href'])
             lead_data = self.get_lead(lead_path)
@@ -208,7 +217,8 @@ class AmoCRM:
                 success_leads.append(lead_data['price'])
             elif self.check_lead_is_active(lead_data):
                 active_leads.append(lead_data['id'])
-        return success_leads, active_leads
+            last_full_payment = self.check_lead_is_fully_paid(lead_data)
+        return success_leads, active_leads, last_full_payment
 
     def get_company_success_leads(self, company_id: str, months: int):
         leads = self.get_company_leads(company_id)

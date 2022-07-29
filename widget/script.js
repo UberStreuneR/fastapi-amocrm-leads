@@ -325,19 +325,31 @@ define(["./templates.js"], function (templatesRenderer) {
             });
             return null;
           }
-          if (!(parseInt(fromAmount.value) <= parseInt(toAmount.value))) {
+          if (
+            !(parseInt(fromAmount.value) <= parseInt(toAmount.value)) &&
+            fromAmount.value
+          ) {
             AMOCRM.notifications.show_message({
               header: this.widget.langs.widget.name,
               text: 'Значение "от" больше значения "до"',
             });
             return null;
           }
+          if (fromAmount.value) {
+            return {
+              status: status.value,
+              dependency_type: depType.value,
+              entity_type: entityType.value,
+              field_id: entityField.value,
+              from_amount: fromAmount.value,
+              to_amount: toAmount.value,
+            };
+          }
           return {
             status: status.value,
             dependency_type: depType.value,
             entity_type: entityType.value,
             field_id: entityField.value,
-            from_amount: fromAmount.value,
             to_amount: toAmount.value,
           };
         });
