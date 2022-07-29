@@ -107,8 +107,8 @@ class CompanyManager(EntityManager):
 
     def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
         for custom_field in company_data['custom_fields_values']:
-            if custom_field['field_id'] == field_id:
-                if custom_field['values'][0]['value'] != value:
+            if int(custom_field['field_id']) == int(field_id):
+                if int(custom_field['values'][0]['value']) != int(value):
                     print(custom_field['field_id'], field_id,
                           custom_field['values'][0]['value'], value)
                     self._update_values.append(
