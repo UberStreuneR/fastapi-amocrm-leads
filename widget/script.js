@@ -213,6 +213,8 @@ define(["./templates.js"], function (templatesRenderer) {
             runCheck.innerText = "Выполняется проверка";
             runCheck.disabled = true;
             companyRunCheck.disabled = true;
+            var saveBtns = document.querySelectorAll("button#save");
+            saveBtns.forEach(btn => (btn.disabled = true));
           },
         });
       });
@@ -265,6 +267,8 @@ define(["./templates.js"], function (templatesRenderer) {
             runCheck.innerText = "Выполняется проверка";
             runCheck.disabled = true;
             contactRunCheck.disabled = true;
+            var saveBtns = document.querySelectorAll("button#save");
+            saveBtns.forEach(btn => (btn.disabled = true));
           },
         });
       });
@@ -496,6 +500,8 @@ define(["./templates.js"], function (templatesRenderer) {
             contactRunCheck.innerText = "Выполняется проверка";
             companyRunCheck.disabled = true;
             companyRunCheck.innerText = "Выполняется проверка";
+            var saveBtns = document.querySelectorAll("button#save");
+            saveBtns.forEach(btn => (btn.disabled = true));
           }
         },
       });

@@ -178,6 +178,7 @@ class ContactManager(EntityManager):
 
     def set_many_fields(self):
         if len(self._update_values > 0):
+            print(f"\n\nUPDATE_VALUES: {self._update_values}\n\n")
             self._amocrm.set_many_contacts_field(self._update_values)
             self._update_values = []
 
@@ -276,7 +277,7 @@ class HookHandler:
             "get", f"api/v4/contacts/{contact_id}")
         contact_companies = contact_data['_embedded']['companies']
         try:
-            return contact_companies[0]['id']
+            return contact_companies[0]['id'], contact_data
         except IndexError:
             return None
 
@@ -284,14 +285,14 @@ class HookHandler:
         lead_id = self.get_lead_id_from_data(data)
         lead = self._amocrm._make_request(
             "get", f"api/v4/leads/{lead_id}", {"with": "contacts"})
-        main_contact_id = self.get_lead_main_contact_id(lead)
+        main_contact_id, contact_data = self.get_lead_main_contact_id(lead)
         company_id = self.get_contact_company_id(main_contact_id)
-        return main_contact_id, company_id
+        return main_contact_id, company_id, contact_data
 
     def handle(self, data):
-        main_contact_id, company_id = self.get_main_contact_and_company_ids(
+        main_contact_id, company_id, contact_data = self.get_main_contact_and_company_ids(
             data)
-
-        self._contact_manager.check(main_contact_id)
+        self._contact_manager.check(main_contact_id, contact_data)
         if company_id is not None:
-            self._company_manager.check(company_id)
+            company_data = self._amocrm.get_company(company_id)
+            self._company_manager.check(company_id, company_data)
