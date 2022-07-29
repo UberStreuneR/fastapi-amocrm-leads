@@ -310,13 +310,14 @@ define(["./templates.js"], function (templatesRenderer) {
             });
             return null;
           }
-          if (!fromAmount.value) {
-            AMOCRM.notifications.show_message({
-              header: this.widget.langs.widget.name,
-              text: 'Правило "от" не должно быть пустым',
-            });
-            return null;
-          }
+          //TODO: remove this check
+          // if (!fromAmount.value) {
+          //   AMOCRM.notifications.show_message({
+          //     header: this.widget.langs.widget.name,
+          //     text: 'Правило "от" не должно быть пустым',
+          //   });
+          //   return null;
+          // }
           if (!toAmount.value) {
             AMOCRM.notifications.show_message({
               header: this.widget.langs.widget.name,
@@ -347,8 +348,9 @@ define(["./templates.js"], function (templatesRenderer) {
             path: "settings/status",
             data: result,
             successful: response => {
-              alert(JSON.stringify(response));
-              console.log(response);
+              saveBtn.innerText = "Сохранено";
+              // alert(JSON.stringify(response));
+              // console.log(response);
             },
           });
         }

@@ -128,9 +128,13 @@ class CompanyManager(EntityManager):
             {"id": company_id, "field_id": field_id, "value": value})
 
     def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int, company_data):
-        if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
-            self.set_field_if_different(
-                company_id, status_setting.field_id, status_setting.status, company_data)
+        if comparison_value <= status_setting.to_amount:
+            if status_setting.from_amount is None:
+                return self.set_field_if_different(
+                    company_id, status_setting.field_id, status_setting.status, company_data)
+            if comparison_value >= status_setting.from_amount:
+                return self.set_field_if_different(
+                    company_id, status_setting.field_id, status_setting.status, company_data)
 
     def apply_status_settings(self, company_id: int, sum_: int, amount: int, company_data):
         for status_setting in self.status_settings:
@@ -233,13 +237,13 @@ class ContactManager(EntityManager):
 
     # comparison_value является либо суммой, либо количеством
     def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int, contact_data):
-        if comparison_value >= status_setting.from_amount and comparison_value <= status_setting.to_amount:
-            # self.set_field(contact_id,
-            #    status_setting.field_id, status_setting.status)
-            self.set_field_if_different(
-                contact_id, status_setting.field_id, status_setting.status, contact_data)
-            # self._update_values.append(
-            # {"id": contact_id, "field_id": status_setting.field_id, "value": status_setting.status})
+        if comparison_value <= status_setting.to_amount:
+            if status_setting.from_amount is None:
+                return self.set_field_if_different(
+                    contact_id, status_setting.field_id, status_setting.status, contact_data)
+            if comparison_value >= status_setting.from_amount:
+                return self.set_field_if_different(
+                    contact_id, status_setting.field_id, status_setting.status, contact_data)
 
     def apply_status_settings(self, contact_id: int, sum_: int, amount: int, contact_data):
         for status_setting in self.status_settings:

@@ -12,7 +12,7 @@ class StatusSetting(DatabaseModel, BaseModel, table=True):
     dependency_type: str  # quantity | sum
     entity_type: str  # company | contact
     field_id: int
-    from_amount: int
+    from_amount: Optional[int] = Field(default=None)
     to_amount: int
 
 
