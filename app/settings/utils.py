@@ -210,18 +210,24 @@ class ContactManager(EntityManager):
             self._amocrm.set_many_leads_field(self._update_leads_values)
             self._update_leads_values = []
 
+    def update_or_append_values(self, company_id, field_id, value):
+        for update_value in self._update_values:
+            if update_value['id'] == company_id:
+                update_value['custom_fields_values'].append(
+                    {"field_id": field_id, "values": [{'value': value}]})
+                return
+        self._update_values.append(
+            {"id": company_id, "field_id": field_id, "value": value})
+
     def set_field_if_different(self, contact_id: int, field_id: int, value: int, contact_data):
         for custom_field in contact_data['custom_fields_values']:
-            if custom_field['field_id'] == field_id:
-                if custom_field['values'][0]['value'] != value:
-                    for value in self._update_values:
-                        if value['id'] == contact_id:
-                            value['custom_fields_values'].append(
-                                {"field_id": field_id, "values": [{'value': value}]})
-                            return
-                    self._update_values.append(
-                        {"id": contact_id, "field_id": field_id, "value": value})
-                    return
+            if int(custom_field['field_id']) == int(field_id):
+                if str(custom_field['values'][0]['value']) != str(value):
+                    print(
+                        f"\n\nSAME VALUE: {custom_field['values'][0]['value']} = {value}\n\n")
+                    self.update_or_append_values(contact_id, field_id, value)
+                return
+        # если нет полей с таким id
         self._update_values.append(
             {"id": contact_id, "field_id": field_id, "value": value})
 
