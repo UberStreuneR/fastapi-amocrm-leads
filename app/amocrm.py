@@ -202,11 +202,14 @@ class AmoCRM:
     def check_lead_is_fully_paid(self, lead: dict):
         price = lead['price']
         logger.info(f"\n\n\nlead data: {lead}\n\n\n")
-        for field in lead['custom_fields_values']:
-            if field['field_id'] == 1265117:
-                if int(field['values'][0]['value']) == int(price):
-                    return price
-        return None
+        try:
+            for field in lead['custom_fields_values']:
+                if field['field_id'] == 1265117:
+                    if int(field['values'][0]['value']) == int(price):
+                        return price
+            return None
+        except TypeError:
+            return None
 
     def get_success_and_active_leads(self, months, leads):
         success_leads = []
