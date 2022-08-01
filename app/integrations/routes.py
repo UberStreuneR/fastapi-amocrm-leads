@@ -40,7 +40,6 @@ def get_integrations(session: Session = Depends(get_session)):
 
 @router.get("/get-first")
 def get_first_integration(session: Session = Depends(get_session)):
-
     return services.get_first_integration(session)
 
 

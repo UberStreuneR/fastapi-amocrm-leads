@@ -66,37 +66,14 @@ def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm)):
     return amocrm.get_custom_fields()
 
 
-# @router.post("/run-contact-check")
-# def run_contact_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-#     manager = ContactManager(amocrm, session)
-#     manager.run_check()
-
-
-# @router.post("/run-company-check")
-# def run_company_check(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
-#     manager = CompanyManager(amocrm, session)
-#     manager.run_check()
-
 @router.post("/run-contact-check")
 def run_contact_check():
     contact_check.delay()
-    # manager = ContactManager(amocrm, session)
-    # manager.run_check()
 
 
 @router.post("/run-company-check")
 def run_company_check():
     company_check.delay()
-    # manager = CompanyManager(amocrm, session)
-    # manager.run_check()
-
-
-# async def background_request(request_data, amocrm, session):
-#     contact_manager = ContactManager(amocrm, session)
-#     company_manager = CompanyManager(amocrm, session)
-
-#     handler = HookHandler(contact_manager, company_manager, amocrm)
-#     await handler.handle(request_data)
 
 
 @router.post("/handle-hook")
@@ -114,10 +91,5 @@ def contact_check_status(session: Session = Depends(get_session)):
 
 
 @router.get("/company-check-status")
-def contact_check_status(session: Session = Depends(get_session)):
+def company_check_status(session: Session = Depends(get_session)):
     return services.get_company_check_status(session)
-
-
-@router.get("/test-task")
-def run_test_task():
-    test_task.delay()

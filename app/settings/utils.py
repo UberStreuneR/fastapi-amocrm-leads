@@ -1,7 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-from starlette.requests import ClientDisconnect
 from fastapi import Request
 from app.amocrm import AmoCRM
 from sqlmodel import Session
@@ -12,6 +11,15 @@ from typing import List
 
 
 class EntityManager(ABC):
+
+    def __init__(self, amocrm: AmoCRM, session: Session) -> None:
+        self._amocrm = amocrm
+        self._session = session
+        self._setting: CompanySetting = None
+        self._status_settings: List[StatusSetting] = None
+        # [{"id": ..., "field_id": ..., "value": ...}, ...]
+        self._update_values = []
+        self._update_leads_values = []
 
     @property
     @abstractmethod
@@ -35,21 +43,56 @@ class EntityManager(ABC):
     def get_success_leads(self):
         pass
 
-    @abstractmethod
-    def update_active_leads(self):
-        pass
+    def update_active_leads(self, leads: List[int], value: int):
+        for lead in leads:
+            self._update_leads_values.append(
+                {"id": lead, "field_id": self.setting.lead_field_id, "value": value})
+        if len(self._update_leads_values) > 0:
+            self._amocrm.set_many_leads_field(self._update_leads_values)
+            self._update_leads_values = []
 
-    @abstractmethod
-    def set_field_if_different(self):
-        pass
+    def update_or_append_values(self, entity_id, field_id, value):
+        for update_value in self._update_values:
+            if update_value['id'] == entity_id:
+                update_value['custom_fields_values'].append(
+                    {"field_id": field_id, "values": [{'value': value}]})
+                return
+        self._update_values.append(
+            {"id": entity_id, "field_id": field_id, "value": value})
 
-    @abstractmethod
-    def apply_one_status_setting(self):
-        pass
+    def set_field_if_different(self, entity_id: int, field_id: int, value: int, entity_data):
+        try:
+            for custom_field in entity_data['custom_fields_values']:
+                if int(custom_field['field_id']) == int(field_id):
+                    if str(custom_field['values'][0]['value']) != str(value):
+                        self.update_or_append_values(
+                            entity_id, field_id, value)
+                    return
+            # если нет полей с таким id
+            self._update_values.append(
+                {"id": entity_id, "field_id": field_id, "value": value})
+        except TypeError:
+            return
 
-    @abstractmethod
-    def apply_status_settings(self):
-        pass
+    def apply_one_status_setting(self, entity_id: int, status_setting: StatusSetting, comparison_value: int, entity_data):
+        if comparison_value <= status_setting.to_amount:
+            if status_setting.from_amount is None:
+                return self.set_field_if_different(
+                    entity_id, status_setting.field_id, status_setting.status, entity_data)
+            if comparison_value >= status_setting.from_amount:
+                return self.set_field_if_different(
+                    entity_id, status_setting.field_id, status_setting.status, entity_data)
+
+    # pull up method
+
+    def apply_status_settings(self, entity_id: int, sum_: int, amount: int, entity_data):
+        for status_setting in self.status_settings:
+            if status_setting.dependency_type == "quantity":
+                self.apply_one_status_setting(
+                    entity_id, status_setting, amount, entity_data)
+            else:
+                self.apply_one_status_setting(
+                    entity_id, status_setting, sum_, entity_data)
 
     @abstractmethod
     def check(self):
@@ -61,16 +104,6 @@ class EntityManager(ABC):
 
 
 class CompanyManager(EntityManager):
-    # TODO: Pull Up Method, Pull Up Fields
-    def __init__(self, amocrm: AmoCRM, session: Session) -> None:
-        self._amocrm = amocrm
-        self._session = session
-        self._setting: CompanySetting = None
-        self._status_settings: List[StatusSetting] = None
-        # [{"id": ..., "field_id": ..., "value": ...}, ...]
-        self._update_values = []
-        self._update_leads_values = []
-
     @property
     def setting(self):
         if self._setting is None:
@@ -95,55 +128,6 @@ class CompanyManager(EntityManager):
     def get_success_leads(self, company_id: int, months: int):
         return self._amocrm.get_company_success_leads(company_id, months)
 
-    def update_active_leads(self, leads: List[int], sum_: int):
-        for lead in leads:
-            self._update_leads_values.append(
-                {"id": lead, "field_id": self.setting.lead_field_id, "value": sum_})
-        if len(self._update_leads_values) > 0:
-            self._amocrm.set_many_leads_field(self._update_leads_values)
-            self._update_leads_values = []
-
-    def update_or_append_values(self, company_id, field_id, value):
-        for update_value in self._update_values:
-            if update_value['id'] == company_id:
-                update_value['custom_fields_values'].append(
-                    {"field_id": field_id, "values": [{'value': value}]})
-                return
-        self._update_values.append(
-            {"id": company_id, "field_id": field_id, "value": value})
-
-    def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
-        try:
-            for custom_field in company_data['custom_fields_values']:
-                if int(custom_field['field_id']) == int(field_id):
-                    if str(custom_field['values'][0]['value']) != str(value):
-                        self.update_or_append_values(
-                            company_id, field_id, value)
-                    return
-            # если нет полей с таким id
-            self._update_values.append(
-                {"id": company_id, "field_id": field_id, "value": value})
-        except TypeError:
-            return
-
-    def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int, company_data):
-        if comparison_value <= status_setting.to_amount:
-            if status_setting.from_amount is None:
-                return self.set_field_if_different(
-                    company_id, status_setting.field_id, status_setting.status, company_data)
-            if comparison_value >= status_setting.from_amount:
-                return self.set_field_if_different(
-                    company_id, status_setting.field_id, status_setting.status, company_data)
-
-    def apply_status_settings(self, company_id: int, sum_: int, amount: int, company_data):
-        for status_setting in self.status_settings:
-            if status_setting.dependency_type == "quantity":
-                self.apply_one_status_setting(
-                    company_id, status_setting, amount, company_data)
-            else:
-                self.apply_one_status_setting(
-                    company_id, status_setting, sum_, company_data)
-
     def check(self, company_id, company_data):
         success_leads, active_leads, last_full_payment = self.get_success_leads(
             company_id, months=self.setting.months)
@@ -160,24 +144,11 @@ class CompanyManager(EntityManager):
 
     def run_check(self):
         for company in self._amocrm.get_many_companies():
-            try:
-                self.check(company['id'], company)
-            except ClientDisconnect:
-                self.check(company['id'], company)
+            self.check(company['id'], company)
         self.set_many_fields()
 
 
 class ContactManager(EntityManager):
-
-    def __init__(self, amocrm: AmoCRM, session: Session) -> None:
-        self._amocrm = amocrm
-        self._session = session
-        self._setting: ContactSetting = None
-        self._status_settings: List[StatusSetting] = None
-        # [{"id": ..., "field_id": ..., "value": ...}, ...]
-        self._update_values = []
-        self._update_leads_values = []
-
     @property
     def setting(self):
         if self._setting is None:
@@ -195,65 +166,12 @@ class ContactManager(EntityManager):
         return self._amocrm.set_contact_field(entity_id, field_id, value)
 
     def set_many_fields(self):
-        print(f"\n\n\n\n{self._update_values}\n\n\n\n")
         if len(self._update_values) > 0:
             self._amocrm.set_many_contacts_field(self._update_values)
             self._update_values = []
 
     def get_success_leads(self, contact_id: int, months: int):
         return self._amocrm.get_contact_success_leads(contact_id, months)
-
-    def update_active_leads(self, leads: List[int], amount: int):
-        for lead in leads:
-            self._update_leads_values.append(
-                {"id": lead, "field_id": self.setting.lead_field_id, "value": amount})
-        if len(self._update_leads_values) > 0:
-            self._amocrm.set_many_leads_field(self._update_leads_values)
-            self._update_leads_values = []
-
-    def update_or_append_values(self, company_id, field_id, value):
-        for update_value in self._update_values:
-            if update_value['id'] == company_id:
-                update_value['custom_fields_values'].append(
-                    {"field_id": field_id, "values": [{'value': value}]})
-                return
-        self._update_values.append(
-            {"id": company_id, "field_id": field_id, "value": value})
-
-    def set_field_if_different(self, contact_id: int, field_id: int, value: int, contact_data):
-        try:
-            for custom_field in contact_data['custom_fields_values']:
-                if int(custom_field['field_id']) == int(field_id):
-                    if str(custom_field['values'][0]['value']) != str(value):
-                        print(
-                            f"\n\nSAME VALUE: {custom_field['values'][0]['value']} = {value}\n\n")
-                        self.update_or_append_values(
-                            contact_id, field_id, value)
-                    return
-            # если нет полей с таким id
-            self._update_values.append(
-                {"id": contact_id, "field_id": field_id, "value": value})
-        except TypeError:
-            return
-
-    # comparison_value является либо суммой, либо количеством
-    def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int, contact_data):
-        if comparison_value <= status_setting.to_amount:
-            if status_setting.from_amount is None:
-                return self.set_field_if_different(
-                    contact_id, status_setting.field_id, status_setting.status, contact_data)
-            if comparison_value >= status_setting.from_amount:
-                return self.set_field_if_different(
-                    contact_id, status_setting.field_id, status_setting.status, contact_data)
-
-    def apply_status_settings(self, contact_id: int, sum_: int, amount: int, contact_data):
-        for status_setting in self.status_settings:
-            if status_setting.dependency_type == "quantity":
-                self.apply_one_status_setting(
-                    contact_id, status_setting, amount, contact_data)
-            else:
-                self.apply_one_status_setting(
-                    contact_id, status_setting, sum_, contact_data)
 
     def check(self, contact_id, contact_data):
         success_leads, active_leads, _ = self.get_success_leads(
@@ -267,15 +185,11 @@ class ContactManager(EntityManager):
 
     def run_check(self):
         for contact in self._amocrm.get_many_contacts():
-            try:
-                self.check(contact['id'], contact)
-            except ClientDisconnect:
-                self.check(contact['id'], contact)
+            self.check(contact['id'], contact)
         self.set_many_fields()
 
 
 class HookHandler:
-    # TODO: Implement the Strategy pattern for handling the request
     def __init__(self, contact_manager: ContactManager, company_manager: CompanyManager, amocrm: AmoCRM) -> None:
         self._contact_manager = contact_manager
         self._company_manager = company_manager
@@ -330,3 +244,4 @@ class HookHandler:
         if company_id is not None:
             company_data = self._amocrm.get_company(company_id)
             self._company_manager.check(company_id, company_data)
+        self.set_many_fields()

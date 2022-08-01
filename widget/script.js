@@ -91,6 +91,11 @@ define(["./templates.js"], function (templatesRenderer) {
       };
     }
 
+    revertSaveButtonsToOriginal() {
+      var saveBtns = document.querySelectorAll("button#save");
+      saveBtns.forEach(btn => (btn.innerText = "Сохранить"));
+    }
+
     addDeleteButtonListeners() {
       var tbody = document.querySelector("#status-tab tbody");
       tbody.addEventListener("click", e => {
@@ -111,6 +116,7 @@ define(["./templates.js"], function (templatesRenderer) {
     addControlButtonListeners() {
       var tbody = document.querySelector("#status-tab tbody");
       tbody.addEventListener("click", e => {
+        this.revertSaveButtonsToOriginal();
         if (
           e.target.matches(".control--select--list--item-inner") &&
           e.target.parentElement.parentElement.nextElementSibling.classList.contains(
@@ -137,25 +143,12 @@ define(["./templates.js"], function (templatesRenderer) {
       });
     }
 
-    addTestRequestButtonListener() {
-      var testBtn = document.querySelector("#test-request");
-      testBtn.addEventListener("click", () => {
-        this.makeRequest({
-          method: "get",
-          path: "settings/run-company-check",
-          successful: response => {
-            alert(JSON.stringify(response));
-            console.log(response);
-          },
-        });
-      });
-    }
-
     addTabButtonsListeners() {
       var tabBtns = document.querySelectorAll("[data-content-selector]");
       var tabs = document.querySelectorAll("[data-content-tab]");
       tabBtns.forEach(btn => {
         btn.addEventListener("click", () => {
+          this.revertSaveButtonsToOriginal();
           const target = document.querySelector(btn.dataset.contentSelector);
           tabs.forEach(tab => {
             tab.classList.remove("active");
@@ -170,7 +163,12 @@ define(["./templates.js"], function (templatesRenderer) {
     addContactTabButtonListeners() {
       var saveButton = document.querySelector("#contact-tab #save");
       var runCheck = document.querySelector("#contact-tab #runCheck");
-
+      var contactTab = document.querySelector("#contact-tab");
+      contactTab.addEventListener("click", e => {
+        if (e.target.id != "save") {
+          this.revertSaveButtonsToOriginal();
+        }
+      });
       var contactMonths = document.querySelector(
         "#contact-tab input[name=contact_input_months]"
       );
@@ -223,7 +221,12 @@ define(["./templates.js"], function (templatesRenderer) {
     addCompanyTabButtonListeners() {
       var saveButton = document.querySelector("#company-tab #save");
       var runCheck = document.querySelector("#company-tab #runCheck");
-
+      var companyTab = document.querySelector("#company-tab");
+      companyTab.addEventListener("click", e => {
+        if (e.target.id != "save") {
+          this.revertSaveButtonsToOriginal();
+        }
+      });
       var companyMonths = document.querySelector(
         "#company-tab input[name=company_input_months]"
       );
@@ -234,7 +237,6 @@ define(["./templates.js"], function (templatesRenderer) {
         "#company-tab input[name=company_select_lead_field]"
       );
       saveButton.addEventListener("click", () => {
-        //TODO: add some css
         var months = companyMonths.value;
         var companyField = companySelect.value;
         var leadField = companySelectLead.value;
@@ -279,6 +281,12 @@ define(["./templates.js"], function (templatesRenderer) {
         this.returnItems();
       var addRowBtn = document.querySelector("#addRow");
       var saveBtn = document.querySelector("#status-tab #save");
+      var statusTab = document.querySelector("#status-tab");
+      statusTab.addEventListener("click", e => {
+        if (e.target.id != "save") {
+          this.revertSaveButtonsToOriginal();
+        }
+      });
       addRowBtn.addEventListener("click", () => {
         this.renderTableRow(
           dependencyItems,
@@ -310,14 +318,6 @@ define(["./templates.js"], function (templatesRenderer) {
             });
             return null;
           }
-          //TODO: remove this check
-          // if (!fromAmount.value) {
-          //   AMOCRM.notifications.show_message({
-          //     header: this.widget.langs.widget.name,
-          //     text: 'Правило "от" не должно быть пустым',
-          //   });
-          //   return null;
-          // }
           if (!toAmount.value) {
             AMOCRM.notifications.show_message({
               header: this.widget.langs.widget.name,
@@ -529,7 +529,10 @@ define(["./templates.js"], function (templatesRenderer) {
             companyRunCheck.disabled = true;
             companyRunCheck.innerText = "Выполняется проверка";
             var saveBtns = document.querySelectorAll("button#save");
-            saveBtns.forEach(btn => (btn.disabled = true));
+            saveBtns.forEach(btn => {
+              btn.disabled = true;
+              btn.innerText = "Сохранить";
+            });
           }
         },
       });
