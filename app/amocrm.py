@@ -145,28 +145,23 @@ class AmoCRM:
             "get", f"/api/v4/contacts/{contact_id}", data)
         return response['_embedded']['leads']
 
-    def get_company(self, company_id: str):
+    def get_company(self, company_id: int):
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/companies/{company_id}", data)
         return response
 
-    # def get_company_leads(self, company_data):
-    #     return company_data['_embedded']['leads']
-
-    # def get_company_custom_fields(self, company_data) -> List[dict]:
-    #     return company_data['custom_fields_values']
+    def get_contact(self, company_id: int):
+        data = {"with": "leads"}
+        response = self._make_request(
+            "get", f"/api/v4/contacts/{company_id}", data)
+        return response
 
     def get_company_leads(self, company_id: str):
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/companies/{company_id}", data)
         return response['_embedded']['leads']
-
-    def get_company_custom_fields(self, company_id: str) -> List[dict]:
-        response = self._make_request(
-            "get", f"/api/v4/companies/{company_id}")
-        return response['custom_fields_values']
 
     def get_lead(self, lead_path: str):
         return self._make_request("get", lead_path)
@@ -226,11 +221,11 @@ class AmoCRM:
                 last_full_payment = temp
         return success_leads, active_leads, last_full_payment
 
-    def get_company_success_leads(self, company_id: str, months: int):
+    def get_company_success_leads(self, company_id: int, months: int):
         leads = self.get_company_leads(company_id)
         return self.get_success_and_active_leads(months, leads)
 
-    def get_contact_success_leads(self, contact_id: str, months: int):
+    def get_contact_success_leads(self, contact_id: int, months: int):
         leads = self.get_contact_leads(contact_id)
         return self.get_success_and_active_leads(months, leads)
 

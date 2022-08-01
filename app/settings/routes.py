@@ -7,10 +7,10 @@ from app.settings.schemas import StatusSetting
 from . import services
 from sqlmodel import Session
 from typing import List
-from fastapi import BackgroundTasks, Response
+from fastapi import Response
 from fastapi import status
 from querystring_parser import parser
-from .tasks import company_check, contact_check, background_request
+from .tasks import company_check, contact_check, handle_hook_on_background
 
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -80,7 +80,7 @@ async def handle_hook(request: Request):
     if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
-        background_request.delay(json_data)
+        handle_hook_on_background.delay(json_data)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

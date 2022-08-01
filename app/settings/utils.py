@@ -8,7 +8,7 @@ from .schemas import CompanySetting, ContactSetting, StatusSetting
 from . import services
 from app.settings_ import settings
 from querystring_parser import parser
-from typing import List
+from typing import List, Union
 
 
 class EntityManager(ABC):
@@ -61,7 +61,7 @@ class EntityManager(ABC):
         self._update_values.append(
             {"id": entity_id, "field_id": field_id, "value": value})
 
-    def set_field_if_different(self, entity_id: int, field_id: int, value: int, entity_data):
+    def set_field_if_different(self, entity_id: int, field_id: int, value: Union[str, int], entity_data):
         try:
             for custom_field in entity_data['custom_fields_values']:
                 if int(custom_field['field_id']) == int(field_id):
@@ -219,8 +219,7 @@ class HookHandler:
     # У этого контакта есть только id и ссылка
     def get_contact_company_id(self, contact_id: int):
 
-        contact_data = self._amocrm._make_request(
-            "get", f"api/v4/contacts/{contact_id}")
+        contact_data = self._amocrm.get_contact(contact_id)
         contact_companies = contact_data['_embedded']['companies']
         try:
             return contact_companies[0]['id'], contact_data

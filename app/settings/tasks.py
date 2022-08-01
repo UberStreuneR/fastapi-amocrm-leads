@@ -6,7 +6,7 @@ from .task_classes import ContactCheck, CompanyCheck
 
 
 @app.task
-def background_request(request_data, ignore_result=True):
+def handle_hook_on_background(request_data, ignore_result=True):
     amocrm = get_amocrm_from_first_integration()
     session = next(get_session())
     contact_manager = ContactManager(amocrm, session)

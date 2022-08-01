@@ -3,6 +3,7 @@ version: "3.8"
 services:
   app:
     build: .
+    restart: unless-stopped
     container_name: app
     command: sh -c "uvicorn app.main:app --reload --host 0.0.0.0 --port 80"
     labels:
@@ -19,6 +20,7 @@ services:
 
   contact_level_db:
     image: postgres
+    restart: unless-stopped
     container_name: contact_level_db
     environment:
       POSTGRES_USER: docker
@@ -29,6 +31,7 @@ services:
 
   worker:
     build: .
+    restart: unless-stopped
     container_name: worker
     command: ./app/worker.sh
     env_file:
@@ -37,6 +40,7 @@ services:
       - rabbitmq
 
   rabbitmq:
+  restart: unless-stopped
     container_name: rabbitmq
     image: "rabbitmq:3.10.5"
 
