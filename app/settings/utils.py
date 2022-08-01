@@ -6,6 +6,7 @@ from app.amocrm import AmoCRM
 from sqlmodel import Session
 from app.settings.schemas import CompanySetting, ContactSetting, StatusSetting
 from app.settings import services
+from app.settings_ import settings
 from querystring_parser import parser
 from typing import List
 
@@ -136,7 +137,8 @@ class CompanyManager(EntityManager):
         self.apply_status_settings(company_id, sum_, amount, company_data)
 
         if last_full_payment is not None:
-            self.set_field(company_id, 1265119, last_full_payment)
+            self.set_field(
+                company_id, settings.company_last_payment_field, last_full_payment)
 
         self.set_field_if_different(
             company_id, self.setting.company_field_id, sum_, company_data)
