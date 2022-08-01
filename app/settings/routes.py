@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request
 from app.amocrm import AmoCRM
-from app.integrations.deps import get_amocrm_from_first_integration, get_amocrm, get_auth_data, get_session
+from app.integrations.deps import get_amocrm, get_session
 from app.settings.schemas import ContactSetting, CompanySetting, StatusSetting
 from app.settings_ import settings
 from app.settings.schemas import StatusSetting
@@ -10,8 +10,7 @@ from typing import List
 from fastapi import BackgroundTasks, Response
 from fastapi import status
 from querystring_parser import parser
-from app.settings.tasks import company_check, contact_check, background_request, test_task
-from celery import chain
+from app.settings.tasks import company_check, contact_check, background_request
 
 
 router = APIRouter(prefix="/settings", tags=["settings"])

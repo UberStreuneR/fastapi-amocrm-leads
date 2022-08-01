@@ -1,6 +1,4 @@
 from fastapi import APIRouter, Depends, Query
-from app.amocrm import AmoCRM
-from app.integrations.deps import get_amocrm, get_logger, get_amocrm_from_first_integration
 from app.database import get_session
 from sqlmodel import Session
 from app.integrations.schemas import IntegrationInstall, IntegrationUpdate
