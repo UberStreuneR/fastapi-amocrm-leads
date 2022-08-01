@@ -100,11 +100,8 @@ class AmoCRM:
             "grant_type": grant_type,
             token_field: token,
         }
-        logger.info(f"\n\nData:\n{data}\n\n")
         result = self._make_request(
             "post", "oauth2/access_token", data, is_auth=True)
-
-        logger.info(f"\n\n\nAuthorization result: {result}\n\n\n")
 
         self._access_token = result["access_token"]
         self._refresh_token = result["refresh_token"]
@@ -128,13 +125,10 @@ class AmoCRM:
             kwargs["data"] = data
 
         response = requests.request(method, f"{self.url}/{path}", **kwargs)
-        logger.info(f"\n\n\nSTATUS_CODE: {response.status_code}\n\n\n")
         if not is_auth and response.status_code == 401:
             # Если вернулся код 401 и этот запрос не связан с авторизацией, то мы
             # поочередно пробуем авторизоваться через refresh_token и authorization_code
             try:
-                logger.info(
-                    f"\n\nRefreshing, token: {self._refresh_token}\n\n")
                 self.authorize("refresh_token", self._refresh_token)
             except UnexpectedResponse:
                 self.authorize("authorization_code", self._auth_code)
