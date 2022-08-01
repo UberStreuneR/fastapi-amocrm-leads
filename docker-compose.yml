@@ -28,7 +28,7 @@ services:
   worker:
     build: .
     container_name: worker
-    command: celery -A app.worker worker --loglevel=INFO -Q settings
+    command: ./app/worker.sh
     env_file:
       - ./.env
     depends_on:
