@@ -61,7 +61,7 @@ class EntityManager(ABC):
 
 
 class CompanyManager(EntityManager):
-
+    # TODO: Pull Up Method, Pull Up Fields
     def __init__(self, amocrm: AmoCRM, session: Session) -> None:
         self._amocrm = amocrm
         self._session = session
@@ -88,7 +88,6 @@ class CompanyManager(EntityManager):
         return self._amocrm.set_company_field(entity_id, field_id, value)
 
     def set_many_fields(self):
-        print(f"\n\n\n\n{self._update_values}\n\n\n\n")
         if len(self._update_values) > 0:
             self._amocrm.set_many_companies_field(self._update_values)
             self._update_values = []
@@ -98,8 +97,6 @@ class CompanyManager(EntityManager):
 
     def update_active_leads(self, leads: List[int], sum_: int):
         for lead in leads:
-            # self._amocrm.set_lead_field(lead,
-            #                             self.setting.lead_field_id, sum_)
             self._update_leads_values.append(
                 {"id": lead, "field_id": self.setting.lead_field_id, "value": sum_})
         if len(self._update_leads_values) > 0:
@@ -119,8 +116,6 @@ class CompanyManager(EntityManager):
         for custom_field in company_data['custom_fields_values']:
             if int(custom_field['field_id']) == int(field_id):
                 if str(custom_field['values'][0]['value']) != str(value):
-                    print(
-                        f"\n\nSAME VALUE: {custom_field['values'][0]['value']} = {value}\n\n")
                     self.update_or_append_values(company_id, field_id, value)
                 return
         # если нет полей с таким id
@@ -152,8 +147,6 @@ class CompanyManager(EntityManager):
         amount = len(success_leads)
         self.apply_status_settings(company_id, sum_, amount, company_data)
 
-        # TODO: Оплачено == Последняя оплата компании
-        print(f"\n\n\nLAST FULL PAYMENT {last_full_payment}\n\n\n")
         if last_full_payment is not None:
             self.set_field(company_id, 1265119, last_full_payment)
 
@@ -207,9 +200,6 @@ class ContactManager(EntityManager):
         return self._amocrm.get_contact_success_leads(contact_id, months)
 
     def update_active_leads(self, leads: List[int], amount: int):
-        # for lead in leads:
-        #     self._amocrm.set_lead_field(lead,
-        #                                 self.setting.lead_field_id, amount)
         for lead in leads:
             self._update_leads_values.append(
                 {"id": lead, "field_id": self.setting.lead_field_id, "value": amount})
@@ -277,7 +267,7 @@ class ContactManager(EntityManager):
 
 
 class HookHandler:
-
+    # TODO: Implement the Strategy pattern for handling the request
     def __init__(self, contact_manager: ContactManager, company_manager: CompanyManager, amocrm: AmoCRM) -> None:
         self._contact_manager = contact_manager
         self._company_manager = company_manager

@@ -3,7 +3,7 @@ from app.amocrm import AmoCRM
 from app.integrations.deps import get_amocrm, get_logger, get_amocrm_from_first_integration
 from app.database import get_session
 from sqlmodel import Session
-from app.integrations.schemas import IntegrationInstall
+from app.integrations.schemas import IntegrationInstall, IntegrationUpdate
 from app.integrations import services
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
@@ -42,3 +42,12 @@ def get_integrations(session: Session = Depends(get_session)):
 def get_first_integration(session: Session = Depends(get_session)):
 
     return services.get_first_integration(session)
+
+
+@router.post("/corrupt-integration")
+def corrupt(session: Session = Depends(get_session)):
+    integration = services.get_first_integration(session)
+    update = IntegrationUpdate(
+        access_token="some-corrupted-value", refresh_token=integration.refresh_token)
+    integration.update(session, **update.dict())
+    session.commit()
