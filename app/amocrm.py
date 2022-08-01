@@ -18,8 +18,8 @@ class UnexpectedResponse(Exception):
 
         flatten_text = " ".join(response.text.split())
         message = f"Unexpected response `status_code={response.status_code}` `text={flatten_text}`"
-
-        super().__init__(message)
+        logger.error(message)
+        # super().__init__(message)
 
 
 class AmoCRM:
