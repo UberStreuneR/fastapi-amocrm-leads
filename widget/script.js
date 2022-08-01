@@ -93,7 +93,10 @@ define(["./templates.js"], function (templatesRenderer) {
 
     revertSaveButtonsToOriginal() {
       var saveBtns = document.querySelectorAll("button#save");
-      saveBtns.forEach(btn => (btn.innerText = "Сохранить"));
+      saveBtns.forEach(btn => {
+        btn.innerText = "Сохранить";
+        btn.classList.remove("saved");
+      });
     }
 
     addDeleteButtonListeners() {
@@ -199,6 +202,7 @@ define(["./templates.js"], function (templatesRenderer) {
           },
           successful: response => {
             saveButton.innerText = "Сохранено";
+            saveButton.classList.add("saved");
           },
         });
       });
@@ -257,6 +261,7 @@ define(["./templates.js"], function (templatesRenderer) {
           },
           successful: response => {
             saveButton.innerText = "Сохранено";
+            saveButton.classList.add("saved");
           },
         });
       });
@@ -361,6 +366,7 @@ define(["./templates.js"], function (templatesRenderer) {
             data: result,
             successful: response => {
               saveBtn.innerText = "Сохранено";
+              saveButton.classList.add("saved");
               // alert(JSON.stringify(response));
               // console.log(response);
             },

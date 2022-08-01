@@ -86,6 +86,10 @@ hr {
   background-color: #295799;
 }
 
+#save.saved {
+  background-color: #26b04f;
+}
+
 #save:disabled {
   background-color: #7eacee !important;
   pointer-events: none;
