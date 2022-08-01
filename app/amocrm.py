@@ -97,7 +97,7 @@ class AmoCRM:
             "grant_type": grant_type,
             token_field: token,
         }
-
+        print(f"\n\nData:\n{data}\n\n")
         result = self._make_request(
             "post", "oauth2/access_token", data, is_auth=True)
 
