@@ -4,7 +4,10 @@ from app.settings_ import settings
 from datetime import datetime, timedelta
 import time
 import json
-from app.logging import logger
+# from app.logging import logger
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 class UnexpectedResponse(Exception):
@@ -131,7 +134,8 @@ class AmoCRM:
             # Если вернулся код 401 и этот запрос не связан с авторизацией, то мы
             # поочередно пробуем авторизоваться через refresh_token и authorization_code
             try:
-                logger.info(f"\n\nRefreshing, token: {self._refresh_token}\n\n")
+                logger.info(
+                    f"\n\nRefreshing, token: {self._refresh_token}\n\n")
                 self.authorize("refresh_token", self._refresh_token)
             except UnexpectedResponse:
                 self.authorize("authorization_code", self._auth_code)
