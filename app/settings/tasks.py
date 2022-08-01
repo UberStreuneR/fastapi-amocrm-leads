@@ -2,7 +2,7 @@ from app.worker import app
 from app.integrations.deps import get_amocrm_from_first_integration
 from app.settings.utils import ContactManager, CompanyManager, HookHandler
 from sqlmodel import Session
-from app.database import engine
+from app.database import engine, get_session
 from app.settings import services
 import time
 
@@ -11,7 +11,8 @@ class EntityCheck(app.Task):
     _number = 42
 
     def before_start(self, *args, **kwargs):
-        self.session = Session(engine)
+        self.session = next(get_session())
+        # self.session = Session(engine)
         self.amocrm = get_amocrm_from_first_integration()
 
     def after_return(self, *args, **kwargs):
@@ -51,14 +52,13 @@ def test_task(self):
 @app.task
 def background_request(request_data):
     amocrm = get_amocrm_from_first_integration()
-    with Session(engine) as session:
-        contact_manager = ContactManager(amocrm, session)
-        company_manager = CompanyManager(amocrm, session)
+    session = next(get_session())
+    contact_manager = ContactManager(amocrm, session)
+    company_manager = CompanyManager(amocrm, session)
 
-        handler = HookHandler(contact_manager, company_manager, amocrm)
-        handler.handle(request_data)
-        handler.set_many_fields()
-        session.commit()
+    handler = HookHandler(contact_manager, company_manager, amocrm)
+    handler.handle(request_data)
+    handler.set_many_fields()
 
 
 @app.task(base=ContactCheck, bind=True)
