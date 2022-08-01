@@ -125,7 +125,7 @@ class AmoCRM:
             kwargs["data"] = data
 
         response = requests.request(method, f"{self.url}/{path}", **kwargs)
-
+        print(f"\n\n\nSTATUS_CODE: {response.status_code}\n\n\n")
         if not is_auth and response.status_code == 401:
             # Если вернулся код 401 и этот запрос не связан с авторизацией, то мы
             # поочередно пробуем авторизоваться через refresh_token и authorization_code
