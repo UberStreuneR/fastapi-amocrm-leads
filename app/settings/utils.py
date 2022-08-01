@@ -113,14 +113,18 @@ class CompanyManager(EntityManager):
             {"id": company_id, "field_id": field_id, "value": value})
 
     def set_field_if_different(self, company_id: int, field_id: int, value: int, company_data):
-        for custom_field in company_data['custom_fields_values']:
-            if int(custom_field['field_id']) == int(field_id):
-                if str(custom_field['values'][0]['value']) != str(value):
-                    self.update_or_append_values(company_id, field_id, value)
-                return
-        # если нет полей с таким id
-        self._update_values.append(
-            {"id": company_id, "field_id": field_id, "value": value})
+        try:
+            for custom_field in company_data['custom_fields_values']:
+                if int(custom_field['field_id']) == int(field_id):
+                    if str(custom_field['values'][0]['value']) != str(value):
+                        self.update_or_append_values(
+                            company_id, field_id, value)
+                    return
+            # если нет полей с таким id
+            self._update_values.append(
+                {"id": company_id, "field_id": field_id, "value": value})
+        except TypeError:
+            return
 
     def apply_one_status_setting(self, company_id: int, status_setting: StatusSetting, comparison_value: int, company_data):
         if comparison_value <= status_setting.to_amount:
@@ -217,16 +221,20 @@ class ContactManager(EntityManager):
             {"id": company_id, "field_id": field_id, "value": value})
 
     def set_field_if_different(self, contact_id: int, field_id: int, value: int, contact_data):
-        for custom_field in contact_data['custom_fields_values']:
-            if int(custom_field['field_id']) == int(field_id):
-                if str(custom_field['values'][0]['value']) != str(value):
-                    print(
-                        f"\n\nSAME VALUE: {custom_field['values'][0]['value']} = {value}\n\n")
-                    self.update_or_append_values(contact_id, field_id, value)
-                return
-        # если нет полей с таким id
-        self._update_values.append(
-            {"id": contact_id, "field_id": field_id, "value": value})
+        try:
+            for custom_field in contact_data['custom_fields_values']:
+                if int(custom_field['field_id']) == int(field_id):
+                    if str(custom_field['values'][0]['value']) != str(value):
+                        print(
+                            f"\n\nSAME VALUE: {custom_field['values'][0]['value']} = {value}\n\n")
+                        self.update_or_append_values(
+                            contact_id, field_id, value)
+                    return
+            # если нет полей с таким id
+            self._update_values.append(
+                {"id": contact_id, "field_id": field_id, "value": value})
+        except TypeError:
+            return
 
     # comparison_value является либо суммой, либо количеством
     def apply_one_status_setting(self, contact_id: int, status_setting: StatusSetting, comparison_value: int, contact_data):
