@@ -101,6 +101,8 @@ class AmoCRM:
         result = self._make_request(
             "post", "oauth2/access_token", data, is_auth=True)
 
+        print(f"\n\n\nAuthorization result: {result.json()}\n\n\n")
+
         self._access_token = result["access_token"]
         self._refresh_token = result["refresh_token"]
 
@@ -128,6 +130,7 @@ class AmoCRM:
             # Если вернулся код 401 и этот запрос не связан с авторизацией, то мы
             # поочередно пробуем авторизоваться через refresh_token и authorization_code
             try:
+                print(f"\n\nRefreshing, token: {self._refresh_token}\n\n")
                 self.authorize("refresh_token", self._refresh_token)
             except UnexpectedResponse:
                 self.authorize("authorization_code", self._auth_code)
