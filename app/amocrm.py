@@ -105,7 +105,7 @@ class AmoCRM:
         result = self._make_request(
             "post", "oauth2/access_token", data, is_auth=True)
 
-        logger.info(f"\n\n\nAuthorization result: {result.json()}\n\n\n")
+        logger.info(f"\n\n\nAuthorization result: {result}\n\n\n")
 
         self._access_token = result["access_token"]
         self._refresh_token = result["refresh_token"]
