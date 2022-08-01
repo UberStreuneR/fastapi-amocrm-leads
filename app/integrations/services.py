@@ -52,7 +52,8 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         instance.set_pipeline_id()
         instance.set_success_stage_id()
         instance.set_inactive_stage_ids()
-        print(instance.create_hook())
+        instance.create_hook()
+        session.commit()
 
     return AmoCRM(
         account=integration.account,
