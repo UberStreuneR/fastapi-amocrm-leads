@@ -326,7 +326,7 @@ define(["./templates.js"], function (templatesRenderer) {
           if (!toAmount.value) {
             AMOCRM.notifications.show_message({
               header: this.widget.langs.widget.name,
-              text: 'Правило "до" не должно быть пустым',
+              text: "Правило 'до' не должно быть пустым",
             });
             return null;
           }
@@ -336,7 +336,7 @@ define(["./templates.js"], function (templatesRenderer) {
           ) {
             AMOCRM.notifications.show_message({
               header: this.widget.langs.widget.name,
-              text: 'Значение "от" больше значения "до"',
+              text: "Значение 'от' больше значения 'до'",
             });
             return null;
           }
@@ -660,13 +660,13 @@ define(["./templates.js"], function (templatesRenderer) {
         ];
         styles.forEach(style => {
           $("head").append(
-            '<link href="' +
+            "<link href='" +
               settings.path +
               "/styles/" +
               style +
               "?v=" +
               settings.version +
-              '" type="text/css" rel="stylesheet">'
+              " type='text/css' rel='stylesheet'>"
           );
         });
 

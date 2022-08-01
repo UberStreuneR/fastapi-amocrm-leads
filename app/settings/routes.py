@@ -77,7 +77,7 @@ def run_company_check():
 
 @router.post("/handle-hook")
 async def handle_hook(request: Request):
-    if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
+    if request.headers["Content-Type"] == "application/x-www-form-urlencoded":
         data = await request.body()
         json_data = parser.parse(data, normalized=True)
         handle_hook_on_background.delay(json_data)

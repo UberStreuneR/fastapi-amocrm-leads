@@ -10,6 +10,7 @@ from .schemas import Integration
 from app.settings_ import settings
 
 import logging
+from logging import Logger
 import sys
 
 
@@ -56,7 +57,7 @@ def get_amocrm_from_first_integration():
     return services.make_amocrm(session, integration)
 
 
-def get_logger():
+def get_logger() -> Logger:
     logging.basicConfig(
         format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
         level=logging.DEBUG,

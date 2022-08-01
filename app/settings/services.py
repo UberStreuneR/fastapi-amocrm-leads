@@ -3,7 +3,7 @@ from sqlmodel import Session
 from typing import List
 
 
-def get_status_settings(session: Session):
+def get_status_settings(session: Session) -> List[StatusSetting]:
     return session.query(StatusSetting).all()
 
 
@@ -23,7 +23,7 @@ def save_status_settings(session: Session, status_settings: List[StatusSetting])
     return result
 
 
-def delete_status_settings(session: Session):
+def delete_status_settings(session: Session) -> None:
     instances = session.query(StatusSetting).all()
     for instance in instances:
         session.delete(instance)
@@ -59,7 +59,7 @@ def set_company_setting(session: Session, company_setting: CompanySetting) -> Co
     return instance
 
 
-def set_contact_check_status(session: Session, running: bool):
+def set_contact_check_status(session: Session, running: bool) -> ContactCheckStatus:
     instance = session.query(ContactCheckStatus).first()
     if instance is None:
         instance = ContactCheckStatus.create(session, running=running)
@@ -68,14 +68,14 @@ def set_contact_check_status(session: Session, running: bool):
     return instance
 
 
-def get_contact_check_status(session: Session):
+def get_contact_check_status(session: Session) -> bool:
     instance = session.query(ContactCheckStatus).first()
     if instance is None:
         return False
     return instance.running
 
 
-def set_company_check_status(session: Session, running: bool):
+def set_company_check_status(session: Session, running: bool) -> CompanyCheckStatus:
     instance = session.query(CompanyCheckStatus).first()
     if instance is None:
         instance = CompanyCheckStatus.create(session, running=running)
@@ -84,7 +84,7 @@ def set_company_check_status(session: Session, running: bool):
     return instance
 
 
-def get_company_check_status(session: Session):
+def get_company_check_status(session: Session) -> bool:
     instance = session.query(CompanyCheckStatus).first()
     if instance is None:
         return False

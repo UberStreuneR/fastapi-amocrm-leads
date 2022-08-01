@@ -8,7 +8,7 @@ from .schemas import CompanySetting, ContactSetting, StatusSetting
 from . import services
 from app.settings_ import settings
 from querystring_parser import parser
-from typing import List, Union
+from typing import List, Union, Tuple
 
 
 class EntityManager(ABC):
@@ -44,7 +44,7 @@ class EntityManager(ABC):
     def get_success_leads(self):
         pass
 
-    def update_active_leads(self, leads: List[int], value: int):
+    def update_active_leads(self, leads: List[int], value: int) -> None:
         for lead in leads:
             self._update_leads_values.append(
                 {"id": lead, "field_id": self.setting.lead_field_id, "value": value})
@@ -52,20 +52,20 @@ class EntityManager(ABC):
             self._amocrm.set_many_leads_field(self._update_leads_values)
             self._update_leads_values = []
 
-    def update_or_append_values(self, entity_id, field_id, value):
+    def update_or_append_values(self, entity_id, field_id, value) -> None:
         for update_value in self._update_values:
-            if update_value['id'] == entity_id:
-                update_value['custom_fields_values'].append(
-                    {"field_id": field_id, "values": [{'value': value}]})
+            if update_value["id"] == entity_id:
+                update_value["custom_fields_values"].append(
+                    {"field_id": field_id, "values": [{"value": value}]})
                 return
         self._update_values.append(
             {"id": entity_id, "field_id": field_id, "value": value})
 
-    def set_field_if_different(self, entity_id: int, field_id: int, value: Union[str, int], entity_data):
+    def set_field_if_different(self, entity_id: int, field_id: int, value: Union[str, int], entity_data) -> None:
         try:
-            for custom_field in entity_data['custom_fields_values']:
-                if int(custom_field['field_id']) == int(field_id):
-                    if str(custom_field['values'][0]['value']) != str(value):
+            for custom_field in entity_data["custom_fields_values"]:
+                if int(custom_field["field_id"]) == int(field_id):
+                    if str(custom_field["values"][0]["value"]) != str(value):
                         self.update_or_append_values(
                             entity_id, field_id, value)
                     return
@@ -75,18 +75,18 @@ class EntityManager(ABC):
         except TypeError:
             return
 
-    def apply_one_status_setting(self, entity_id: int, status_setting: StatusSetting, comparison_value: int, entity_data):
+    def apply_one_status_setting(self, entity_id: int, status_setting: StatusSetting, comparison_value: int, entity_data) -> None:
         if comparison_value <= status_setting.to_amount:
             if status_setting.from_amount is None:
-                return self.set_field_if_different(
+                self.set_field_if_different(
                     entity_id, status_setting.field_id, status_setting.status, entity_data)
             if comparison_value >= status_setting.from_amount:
-                return self.set_field_if_different(
+                self.set_field_if_different(
                     entity_id, status_setting.field_id, status_setting.status, entity_data)
 
     # pull up method
 
-    def apply_status_settings(self, entity_id: int, sum_: int, amount: int, entity_data):
+    def apply_status_settings(self, entity_id: int, sum_: int, amount: int, entity_data) -> None:
         for status_setting in self.status_settings:
             if status_setting.dependency_type == "quantity":
                 self.apply_one_status_setting(
@@ -106,30 +106,30 @@ class EntityManager(ABC):
 
 class CompanyManager(EntityManager):
     @property
-    def setting(self):
+    def setting(self) -> CompanySetting:
         if self._setting is None:
             self._setting = services.get_company_setting(self._session)
         return self._setting
 
     @property
-    def status_settings(self):
+    def status_settings(self) -> List[StatusSetting]:
         if self._status_settings is None:
             self._status_settings = services.get_status_settings_for_company(
                 self._session)
         return self._status_settings
 
-    def set_field(self, entity_id, field_id, value):
+    def set_field(self, entity_id, field_id, value) -> dict:
         return self._amocrm.set_company_field(entity_id, field_id, value)
 
-    def set_many_fields(self):
+    def set_many_fields(self) -> None:
         if len(self._update_values) > 0:
             self._amocrm.set_many_companies_field(self._update_values)
             self._update_values = []
 
-    def get_success_leads(self, company_id: int, months: int):
+    def get_success_leads(self, company_id: int, months: int) -> Tuple[List[dict], List[int], int | None]:
         return self._amocrm.get_company_success_leads(company_id, months)
 
-    def check(self, company_id, company_data):
+    def check(self, company_id, company_data) -> None:
         success_leads, active_leads, last_full_payment = self.get_success_leads(
             company_id, months=self.setting.months)
         sum_ = sum(success_leads)
@@ -144,38 +144,38 @@ class CompanyManager(EntityManager):
             company_id, self.setting.company_field_id, sum_, company_data)
         self.update_active_leads(active_leads, sum_)
 
-    def run_check(self):
+    def run_check(self) -> None:
         for company in self._amocrm.get_many_companies():
-            self.check(company['id'], company)
+            self.check(company["id"], company)
         self.set_many_fields()
 
 
 class ContactManager(EntityManager):
     @property
-    def setting(self):
+    def setting(self) -> ContactSetting:
         if self._setting is None:
             self._setting = services.get_contact_setting(self._session)
         return self._setting
 
     @property
-    def status_settings(self):
+    def status_settings(self) -> List[StatusSetting]:
         if self._status_settings is None:
             self._status_settings = services.get_status_settings_for_contact(
                 self._session)
         return self._status_settings
 
-    def set_field(self, entity_id, field_id, value):
+    def set_field(self, entity_id, field_id, value) -> dict:
         return self._amocrm.set_contact_field(entity_id, field_id, value)
 
-    def set_many_fields(self):
+    def set_many_fields(self) -> None:
         if len(self._update_values) > 0:
             self._amocrm.set_many_contacts_field(self._update_values)
             self._update_values = []
 
-    def get_success_leads(self, contact_id: int, months: int):
+    def get_success_leads(self, contact_id: int, months: int) -> Tuple[List[dict], List[int], Union[int, None]]:
         return self._amocrm.get_contact_success_leads(contact_id, months)
 
-    def check(self, contact_id, contact_data):
+    def check(self, contact_id, contact_data) -> None:
         success_leads, active_leads, _ = self.get_success_leads(
             contact_id, months=self.setting.months)
         sum_ = sum(success_leads)
@@ -185,9 +185,9 @@ class ContactManager(EntityManager):
             contact_id, self.setting.contact_field_id, amount, contact_data)
         self.update_active_leads(active_leads, amount)
 
-    def run_check(self):
+    def run_check(self) -> None:
         for contact in self._amocrm.get_many_contacts():
-            self.check(contact['id'], contact)
+            self.check(contact["id"], contact)
         self.set_many_fields()
 
 
@@ -200,33 +200,27 @@ class HookHandler:
         self._lead_main_contact = None
         self._lead_company = None
 
-    async def get_json_from_request(self, request: Request):
-        if request.headers['Content-Type'] == 'application/x-www-form-urlencoded':
-            data = await request.body()
-            json_data = parser.parse(data, normalized=True)
-            return json_data
+    def get_lead_id_from_data(self, data) -> int:
+        lead_id = list(data["leads"].items())[0][1][0]["id"]
+        return int(lead_id)
 
-    def get_lead_id_from_data(self, data):
-        lead_id = list(data['leads'].items())[0][1][0]['id']
-        return lead_id
-
-    def get_lead_main_contact_id(self, lead):
-        contacts = lead['_embedded']['contacts']
+    def get_lead_main_contact_id(self, lead) -> int:
+        contacts = lead["_embedded"]["contacts"]
         for contact in contacts:
-            if contact['is_main']:
-                return contact['id']
+            if contact["is_main"]:
+                return int(contact["id"])
 
     # У этого контакта есть только id и ссылка
-    def get_contact_company_id(self, contact_id: int):
+    def get_contact_company_id(self, contact_id: int) -> Tuple[str, dict] | Tuple[None, None]:
 
         contact_data = self._amocrm.get_contact(contact_id)
-        contact_companies = contact_data['_embedded']['companies']
+        contact_companies = contact_data["_embedded"]["companies"]
         try:
-            return contact_companies[0]['id'], contact_data
+            return contact_companies[0]["id"], contact_data
         except IndexError:
             return None, None
 
-    def get_main_contact_and_company_ids(self, data):
+    def get_main_contact_and_company_ids(self, data) -> Tuple[int, int, dict | None]:
         lead_id = self.get_lead_id_from_data(data)
         lead = self._amocrm._make_request(
             "get", f"api/v4/leads/{lead_id}", {"with": "contacts"})
@@ -234,11 +228,11 @@ class HookHandler:
         company_id, contact_data = self.get_contact_company_id(main_contact_id)
         return main_contact_id, company_id, contact_data
 
-    def set_many_fields(self):
+    def set_many_fields(self) -> None:
         self._company_manager.set_many_fields()
         self._contact_manager.set_many_fields()
 
-    def handle(self, data):
+    def handle(self, data) -> None:
         main_contact_id, company_id, contact_data = self.get_main_contact_and_company_ids(
             data)
         self._contact_manager.check(main_contact_id, contact_data)

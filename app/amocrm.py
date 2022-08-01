@@ -1,4 +1,4 @@
-from typing import Callable, Union, List, Generator
+from typing import Callable, Union, List, Generator, Tuple
 import requests
 from .settings_ import settings
 from datetime import datetime, timedelta
@@ -12,7 +12,7 @@ logger = get_task_logger(__name__)
 class UnexpectedResponse(Exception):
     """Обертка для не 200х ответов от amoCRM"""
 
-    def __init__(self, response: requests.Response):
+    def __init__(self, response: requests.Response) -> None:
         self.response = response
 
         flatten_text = " ".join(response.text.split())
@@ -44,31 +44,31 @@ class AmoCRM:
         self._auth_code = auth_code
         self._on_auth = on_auth
 
-    def set_pipeline_id(self):
+    def set_pipeline_id(self) -> None:
         if settings.pipeline_id is None:
             response = self._make_request("get", "api/v4/leads/pipelines")
-            for pipeline in response['_embedded']['pipelines']:
-                if pipeline['name'] == "Продажа":
-                    settings.pipeline_id = pipeline['id']
+            for pipeline in response["_embedded"]["pipelines"]:
+                if pipeline["name"] == "Продажа":
+                    settings.pipeline_id = pipeline["id"]
                     break
 
-    def set_success_stage_id(self):
+    def set_success_stage_id(self) -> None:
         if settings.success_stage_id is None:
             response = self._make_request(
                 "get", f"api/v4/leads/pipelines/{settings.pipeline_id}")
-            for status in response['_embedded']['statuses']:
-                if status['name'] == 'Закрыто. Оплата получена':
-                    settings.success_stage_id = status['id']
+            for status in response["_embedded"]["statuses"]:
+                if status["name"] == "Закрыто. Оплата получена":
+                    settings.success_stage_id = status["id"]
                     break
 
-    def set_inactive_stage_ids(self):
+    def set_inactive_stage_ids(self) -> None:
         inactive_statuses = []
         if settings.inactive_stage_ids is None:
             response = self._make_request("get", "api/v4/leads/pipelines")
-            for pipeline in response['_embedded']['pipelines']:
-                for status in pipeline['_embedded']['statuses']:
-                    if not status['is_editable']:
-                        inactive_statuses.append(status['id'])
+            for pipeline in response["_embedded"]["pipelines"]:
+                for status in pipeline["_embedded"]["statuses"]:
+                    if not status["is_editable"]:
+                        inactive_statuses.append(status["id"])
         settings.inactive_stage_ids = inactive_statuses
 
     @property
@@ -77,11 +77,11 @@ class AmoCRM:
         return f"https://{self._account}.amocrm.ru"
 
     @property
-    def client_id(self):
+    def client_id(self) -> str:
         """client_id интеграции"""
         return self._client_id
 
-    def authorize(self, grant_type: str, token: str):
+    def authorize(self, grant_type: str, token: str) -> dict:
         """
         Пройти авторизацию с указанным grant_type,
         поддерживаются refresh_token и authorization_code
@@ -139,101 +139,101 @@ class AmoCRM:
             raise UnexpectedResponse(response)
         return response.json()
 
-    def get_contact_leads(self, contact_id: str):
+    def get_contact_leads(self, contact_id: str) -> List[dict]:
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/contacts/{contact_id}", data)
-        return response['_embedded']['leads']
+        return response["_embedded"]["leads"]
 
-    def get_company(self, company_id: int):
+    def get_company(self, company_id: int) -> dict:
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/companies/{company_id}", data)
         return response
 
-    def get_contact(self, company_id: int):
+    def get_contact(self, company_id: int) -> dict:
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/contacts/{company_id}", data)
         return response
 
-    def get_company_leads(self, company_id: str):
+    def get_company_leads(self, company_id: str) -> List[dict]:
         data = {"with": "leads"}
         response = self._make_request(
             "get", f"/api/v4/companies/{company_id}", data)
-        return response['_embedded']['leads']
+        return response["_embedded"]["leads"]
 
-    def get_lead(self, lead_path: str):
+    def get_lead(self, lead_path: str) -> dict:
         return self._make_request("get", lead_path)
 
-    # 'https://devks.amocrm.ru/api/v4/leads/35178445... -> 'api/v4/leads/35178445'
-    def get_lead_path(self, string):
+    # "https://devks.amocrm.ru/api/v4/leads/35178445... -> "api/v4/leads/35178445"
+    def get_lead_path(self, string) -> str:
         return string[string.find("api"):string.find("?")]
 
-    def check_lead_younger_than(self, lead: dict, months: int):
-        created_at = lead['created_at']
+    def check_lead_younger_than(self, lead: dict, months: int) -> bool:
+        created_at = lead["created_at"]
         date = datetime.fromtimestamp(created_at)
         if datetime.now() - date > timedelta(days=int(months)*30):
             return False
         return True
 
-    def check_lead_is_in_success_stage(self, lead: dict):
+    def check_lead_is_in_success_stage(self, lead: dict) -> bool:
         if settings.pipeline_id is None:
             self.set_pipeline_id()
         if settings.success_stage_id is None:
             self.set_success_stage_id()
 
-        if lead['status_id'] == settings.success_stage_id and lead['pipeline_id'] == settings.pipeline_id:
+        if lead["status_id"] == settings.success_stage_id and lead["pipeline_id"] == settings.pipeline_id:
             return True
         return False
 
-    def check_lead_is_active(self, lead: dict):
+    def check_lead_is_active(self, lead: dict) -> bool:
         if settings.inactive_stage_ids is None:
             self.set_inactive_stage_ids()
-        if lead['status_id'] not in settings.inactive_stage_ids:
+        if lead["status_id"] not in settings.inactive_stage_ids:
             return True
         return False
 
-    def check_lead_is_fully_paid(self, lead: dict):
-        price = lead['price']
+    def check_lead_is_fully_paid(self, lead: dict) -> Union[int, None]:
+        price = lead["price"]
         try:
-            for field in lead['custom_fields_values']:
-                if field['field_id'] == settings.lead_paid_field:  # TODO: remove hardcoding
-                    if int(field['values'][0]['value']) == int(price):
-                        return price
+            for field in lead["custom_fields_values"]:
+                if field["field_id"] == settings.lead_paid_field:  # TODO: remove hardcoding
+                    if int(field["values"][0]["value"]) == int(price):
+                        return int(price)
             return None
         except TypeError:
             return None
 
-    def get_success_and_active_leads(self, months, leads):
+    def get_success_and_active_leads(self, months, leads) -> Tuple[List[dict], List[int], Union[int, None]]:
         success_leads = []
         active_leads = []
         last_full_payment = None
         for lead in leads:
-            lead_path = self.get_lead_path(lead['_links']['self']['href'])
+            lead_path = self.get_lead_path(lead["_links"]["self"]["href"])
             lead_data = self.get_lead(lead_path)
             if self.check_lead_is_in_success_stage(lead_data) and self.check_lead_younger_than(lead_data, months):
-                success_leads.append(lead_data['price'])
+                success_leads.append(lead_data["price"])
             elif self.check_lead_is_active(lead_data):
-                active_leads.append(lead_data['id'])
+                active_leads.append(lead_data["id"])
             temp = self.check_lead_is_fully_paid(lead_data)
             if temp is not None:
                 last_full_payment = temp
         return success_leads, active_leads, last_full_payment
 
-    def get_company_success_leads(self, company_id: int, months: int):
+    def get_company_success_leads(self, company_id: int, months: int) -> Tuple[List[dict], List[int], Union[int, None]]:
         leads = self.get_company_leads(company_id)
         return self.get_success_and_active_leads(months, leads)
 
-    def get_contact_success_leads(self, contact_id: int, months: int):
+    def get_contact_success_leads(self, contact_id: int, months: int) -> Tuple[List[dict], List[int], Union[int, None]]:
         leads = self.get_contact_leads(contact_id)
         return self.get_success_and_active_leads(months, leads)
 
-    def _make_patch_request_data(self, field_id, value):
+    def _make_patch_request_data(self, field_id, value) -> dict:
         data = {
             "custom_fields_values": [{
-                'field_id': field_id,
-                'values': [
+                "field_id": field_id,
+                "values": [
                     {
                         "value": value
                     }
@@ -243,45 +243,36 @@ class AmoCRM:
 
         return data
 
-    def _make_many_patch_request_data(self, entries: List[dict]):
+    def _make_many_patch_request_data(self, entries: List[dict]) -> List[dict]:
         data = []
         for entry in entries:
-            entry_data = {"id": entry['id']}
+            entry_data = {"id": entry["id"]}
             entry_data.update(self._make_patch_request_data(
-                entry['field_id'], entry['value']))
+                entry["field_id"], entry["value"]))
             data.append(entry_data)
         return data
 
-    def set_company_field(self, company_id: int, company_field_id: int, value: int):
-        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+    def set_company_field(self, company_id: int, company_field_id: int, value: int) -> dict:
         data = self._make_patch_request_data(company_field_id, value)
         return self._make_request("patch", f"api/v4/companies/{company_id}", json.dumps(data))
 
-    def set_many_companies_field(self, entries: List[dict]):
-        print(
-            f"(many_companies) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+    def set_many_companies_field(self, entries: List[dict]) -> dict:
         data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/companies", json.dumps(data))
 
-    def set_contact_field(self, contact_id: int, contact_field_id: int, value: int):
-        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+    def set_contact_field(self, contact_id: int, contact_field_id: int, value: int) -> dict:
         data = self._make_patch_request_data(contact_field_id, value)
         return self._make_request("patch", f"api/v4/contacts/{contact_id}", json.dumps(data))
 
-    def set_many_contacts_field(self, entries: List[dict]):
-        print(
-            f"(many_contacts) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+    def set_many_contacts_field(self, entries: List[dict]) -> dict:
         data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/contacts", json.dumps(data))
 
-    def set_lead_field(self, lead_id: int, lead_field_id: int, value: int):
-        print(f"Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+    def set_lead_field(self, lead_id: int, lead_field_id: int, value: int) -> dict:
         data = self._make_patch_request_data(lead_field_id, value)
         return self._make_request("patch", f"api/v4/leads/{lead_id}", json.dumps(data))
 
-    def set_many_leads_field(self, entries: List[dict]):
-        print(
-            f"(many_leads) Request time: {datetime.now().strftime('%Hh %Mm %Ss')}")
+    def set_many_leads_field(self, entries: List[dict]) -> dict:
         data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/leads", json.dumps(data))
 
@@ -312,44 +303,44 @@ class AmoCRM:
 
             params["page"] += 1
 
-    def get_many_contacts(self):
+    def get_many_contacts(self) -> Generator[dict, None, None]:
         yield from self._get_many("contacts", "api/v4/contacts")
 
-    def get_many_companies(self):
+    def get_many_companies(self) -> Generator[dict, None, None]:
         yield from self._get_many("companies", "api/v4/companies")
 
-    def get_value_and_label_from_list(self, items: List):
+    def get_value_and_label_from_list(self, items: List) -> List[dict]:
         result = []
         for item in items:
-            id_and_name = {"value": str(item['id']), "label": item['name']}
+            id_and_name = {"value": str(item["id"]), "label": item["name"]}
             result.append(id_and_name)
         return result
 
-    def get_fields_from_many(self, fields: Generator, field_type: str):
+    def get_fields_from_many(self, fields: Generator, field_type: str) -> List[dict]:
         numeric_fields = [
-            field for field in fields if field['type'] == field_type]
+            field for field in fields if field["type"] == field_type]
         return numeric_fields
 
-    def get_company_custom_fields(self, field_type: str):
+    def get_company_custom_fields(self, field_type: str) -> List[dict]:
         generator = self._get_many(
             "custom_fields", f"/api/v4/companies/custom_fields")
         fields = self.get_fields_from_many(generator, field_type)
         return self.get_value_and_label_from_list(fields)
 
-    def get_contact_custom_fields(self, field_type: str):
+    def get_contact_custom_fields(self, field_type: str) -> List[dict]:
         generator = self._get_many(
             "custom_fields", f"/api/v4/contacts/custom_fields")
         fields = self.get_fields_from_many(generator, field_type)
         return self.get_value_and_label_from_list(fields)
 
-    def get_lead_custom_fields(self, field_type: str = "numeric"):
+    def get_lead_custom_fields(self, field_type: str = "numeric") -> List[dict]:
         """Только поля numeric используются для сущности лид"""
         generator = self._get_many(
             "custom_fields", f"/api/v4/leads/custom_fields")
         numeric_fields = self.get_fields_from_many(generator, field_type)
         return self.get_value_and_label_from_list(numeric_fields)
 
-    def get_custom_fields(self):
+    def get_custom_fields(self) -> dict:
         data = {
             "companyNumericFields": self.get_company_custom_fields("numeric"),
             "companyStringFields": self.get_company_custom_fields("text"),
@@ -359,12 +350,12 @@ class AmoCRM:
         }
         return data
 
-    def create_hook(self):
+    def create_hook(self) -> Union[dict, None]:
         webhook_endpoint = settings.app_host + "settings/handle-hook"
 
         webhook_post_data = {
-            'destination': webhook_endpoint,
-            'settings': ['restore_lead', 'add_lead', 'status_lead']
+            "destination": webhook_endpoint,
+            "settings": ["restore_lead", "add_lead", "status_lead"]
         }
 
         params = {
@@ -378,7 +369,7 @@ class AmoCRM:
             return self._make_request("post", "api/v4/webhooks",
                                       data=webhook_post_data)
 
-    def delete_hook(self):
+    def delete_hook(self) -> None:
         webhook_endpoint = settings.app_host + "settings/handle-hook"
         self._make_request("delete", "api/v4/webhooks",
                            {"destination": webhook_endpoint})

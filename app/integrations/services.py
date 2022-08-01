@@ -29,12 +29,12 @@ def install_integration(session: Session, data: IntegrationInstall) -> Integrati
     return integration
 
 
-def update_integration(session: Session, integration: Integration, data: IntegrationUpdate):
+def update_integration(session: Session, integration: Integration, data: IntegrationUpdate) -> None:
     """Обновить интеграцию"""
     integration.update(session, **data.dict())
 
 
-def delete_integration(session: Session, client_id: str):
+def delete_integration(session: Session, client_id: str) -> None:
     """Удалить интеграцию"""
 
     session.query(Integration).where(
