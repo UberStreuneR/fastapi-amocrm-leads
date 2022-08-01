@@ -5,8 +5,8 @@ from starlette import status
 from starlette.requests import Request
 from app.amocrm import AmoCRM
 from app.database import get_session
-from app.integrations import services
-from app.integrations.schemas import Integration
+from . import services
+from .schemas import Integration
 from app.settings_ import settings
 
 import logging

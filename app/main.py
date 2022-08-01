@@ -9,7 +9,7 @@ from app.integrations.routes import router as integrations_router
 from app.settings.routes import router as settings_router
 from app.settings import services
 from sqlmodel import SQLModel, Session
-from app.database import engine
+from .database import engine
 
 app = FastAPI(docs_url=None, redoc_url=None)
 app.include_router(integrations_router)

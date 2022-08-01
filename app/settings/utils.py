@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from fastapi import Request
 from app.amocrm import AmoCRM
 from sqlmodel import Session
-from app.settings.schemas import CompanySetting, ContactSetting, StatusSetting
-from app.settings import services
+from .schemas import CompanySetting, ContactSetting, StatusSetting
+from . import services
 from app.settings_ import settings
 from querystring_parser import parser
 from typing import List

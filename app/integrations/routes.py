@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from app.database import get_session
 from sqlmodel import Session
-from app.integrations.schemas import IntegrationInstall, IntegrationUpdate
-from app.integrations import services
+from .schemas import IntegrationInstall
+from . import services
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 

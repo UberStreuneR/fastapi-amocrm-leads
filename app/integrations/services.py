@@ -1,6 +1,6 @@
 from typing import List, Union
 from app.amocrm import AmoCRM
-from app.integrations.schemas import IntegrationInstall, Integration, IntegrationUpdate
+from .schemas import IntegrationInstall, Integration, IntegrationUpdate
 from sqlmodel import Session
 from app.settings_ import settings
 

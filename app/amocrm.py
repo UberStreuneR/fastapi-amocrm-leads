@@ -1,6 +1,6 @@
 from typing import Callable, Union, List, Generator
 import requests
-from app.settings_ import settings
+from .settings_ import settings
 from datetime import datetime, timedelta
 import time
 import json
