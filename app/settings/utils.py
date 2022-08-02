@@ -64,11 +64,18 @@ class EntityManager(ABC):
 
     def set_field_if_different(self, entity_id: int, field_id: int, value: Union[str, int], entity_data) -> None:
         try:
+            if entity_data["custom_fields_values"] is None:
+                self._update_values.append(
+                    {"id": entity_id, "field_id": field_id, "value": value})
+                return
             for custom_field in entity_data["custom_fields_values"]:
                 if int(custom_field["field_id"]) == int(field_id):
                     if str(custom_field["values"][0]["value"]) != str(value):
                         self.update_or_append_values(
                             entity_id, field_id, value)
+                    else:
+                        logger.info(
+                            f"\nValues equal: {custom_field['values'][0]['value']} == {value}")
                     return
             # если нет полей с таким id
             self._update_values.append(
