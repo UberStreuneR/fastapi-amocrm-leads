@@ -258,7 +258,7 @@ class AmoCRM:
         return self._make_request("patch", f"api/v4/companies/{company_id}", json.dumps(data))
 
     def set_many_companies_field(self, entries: List[dict]) -> dict:
-        data = self._make_many_patch_request_data(entries)
+        # data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/companies", json.dumps(entries))
 
     def set_contact_field(self, contact_id: int, contact_field_id: int, value: int) -> dict:
@@ -266,7 +266,7 @@ class AmoCRM:
         return self._make_request("patch", f"api/v4/contacts/{contact_id}", json.dumps(data))
 
     def set_many_contacts_field(self, entries: List[dict]) -> dict:
-        data = self._make_many_patch_request_data(entries)
+        # data = self._make_many_patch_request_data(entries)
         return self._make_request("patch", f"api/v4/contacts", json.dumps(entries))
 
     def set_lead_field(self, lead_id: int, lead_field_id: int, value: int) -> dict:
