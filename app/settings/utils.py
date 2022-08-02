@@ -1,14 +1,15 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-from fastapi import Request
 from app.amocrm import AmoCRM
 from sqlmodel import Session
 from .schemas import CompanySetting, ContactSetting, StatusSetting
 from . import services
 from app.settings_ import settings
-from querystring_parser import parser
 from typing import List, Union, Tuple
+
+from celery.utils.log import get_task_logger
+logger = get_task_logger(__name__)
 
 
 class EntityManager(ABC):
@@ -73,9 +74,13 @@ class EntityManager(ABC):
             self._update_values.append(
                 {"id": entity_id, "field_id": field_id, "value": value})
         except TypeError:
-            return
+            logger.info(
+                f"\nTypeError:\nentity_id: {entity_id}\nvalue: {value}\n\ndata:\n{entity_data}\n\n\n")
 
     def apply_one_status_setting(self, entity_id: int, status_setting: StatusSetting, comparison_value: int, entity_data) -> None:
+        logger.info(
+            f"Applying one status setting.\nstatus_setting: {status_setting}\n\ncomparison: {comparison_value}\ndata:\n\n{entity_data}\n\n\n")
+
         if comparison_value <= status_setting.to_amount:
             if status_setting.from_amount is None:
                 self.set_field_if_different(
@@ -87,6 +92,8 @@ class EntityManager(ABC):
     # pull up method
 
     def apply_status_settings(self, entity_id: int, sum_: int, amount: int, entity_data) -> None:
+        logger.info(
+            f"\n\n\nApplying status settings:\nsum: {sum_}\namount: {amount}\n, data:\n{entity_data}\n\nstatus settings:\n{self.status_settings}\n\n\n")
         for status_setting in self.status_settings:
             if status_setting.dependency_type == "quantity":
                 self.apply_one_status_setting(
