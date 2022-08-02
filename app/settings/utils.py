@@ -54,6 +54,7 @@ class EntityManager(ABC):
             self._update_leads_values = []
 
     def update_or_append_values(self, entity_id, field_id, value) -> None:
+        logger.info(f"Update values: {self._update_values}")
         for update_value in self._update_values:
             if update_value["id"] == entity_id:
                 update_value["custom_fields_values"].append(
