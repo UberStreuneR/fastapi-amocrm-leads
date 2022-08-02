@@ -95,6 +95,7 @@ class EntityManager(ABC):
             if status_setting.from_amount is None:
                 self.set_field_if_different(
                     entity_id, status_setting.field_id, status_setting.status, entity_data)
+                return
             if comparison_value >= status_setting.from_amount:
                 self.set_field_if_different(
                     entity_id, status_setting.field_id, status_setting.status, entity_data)
