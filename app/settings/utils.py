@@ -78,8 +78,10 @@ class EntityManager(ABC):
                             f"\nValues equal: {custom_field['values'][0]['value']} == {value}")
                     return
             # если нет полей с таким id
-            self._update_values.append(
-                {"id": entity_id, "field_id": field_id, "value": value})
+            # self._update_values.append(
+            #     {"id": entity_id, "field_id": field_id, "value": value})
+            self.update_or_append_values(
+                entity_id, field_id, value)
         except TypeError:
             logger.info(
                 f"\nTypeError:\nentity_id: {entity_id}\nvalue: {value}\n\ndata:\n{entity_data}\n\n\n")
