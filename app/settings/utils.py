@@ -60,13 +60,13 @@ class EntityManager(ABC):
                     {"field_id": field_id, "values": [{"value": value}]})
                 return
         self._update_values.append(
-            {"id": entity_id, "field_id": field_id, "value": value})
+            {"id": entity_id, "custom_fields_values": [{"field_id": field_id, "values": [{"value": value}]}]})
 
     def set_field_if_different(self, entity_id: int, field_id: int, value: Union[str, int], entity_data) -> None:
         try:
             if entity_data["custom_fields_values"] is None:
-                self._update_values.append(
-                    {"id": entity_id, "field_id": field_id, "value": value})
+                self.update_or_append_values(
+                    entity_id, field_id, value)
                 return
             for custom_field in entity_data["custom_fields_values"]:
                 if int(custom_field["field_id"]) == int(field_id):
