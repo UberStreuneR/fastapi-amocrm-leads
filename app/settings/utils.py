@@ -229,7 +229,8 @@ class HookHandler:
 
     # У этого контакта есть только id и ссылка
     def get_contact_company_id(self, contact_id: int) -> Tuple[str, dict] | Tuple[None, None]:
-
+        if contact_id is None:
+            return None, None
         contact_data = self._amocrm.get_contact(contact_id)
         contact_companies = contact_data["_embedded"]["companies"]
         try:
@@ -252,7 +253,8 @@ class HookHandler:
     def handle(self, data) -> None:
         main_contact_id, company_id, contact_data = self.get_main_contact_and_company_ids(
             data)
-        self._contact_manager.check(main_contact_id, contact_data)
+        if main_contact_id is not None:
+            self._contact_manager.check(main_contact_id, contact_data)
         if company_id is not None:
             company_data = self._amocrm.get_company(company_id)
             self._company_manager.check(company_id, company_data)
