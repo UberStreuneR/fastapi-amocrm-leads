@@ -366,7 +366,7 @@ define(["./templates.js"], function (templatesRenderer) {
             data: result,
             successful: response => {
               saveBtn.innerText = "Сохранено";
-              saveButton.classList.add("saved");
+              saveBtn.classList.add("saved");
               // alert(JSON.stringify(response));
               // console.log(response);
             },
@@ -603,55 +603,22 @@ define(["./templates.js"], function (templatesRenderer) {
     }
 
     addLoadingIcon() {
-      let $page = $("#work_area");
-      var loading = document.createElement("span");
-      loading.classList.add("loading-icon");
-      $page.append(loading);
+      if (!this.isDestroyed) {
+        let $page = $("#work_area");
+        var loading = document.createElement("span");
+        loading.classList.add("contact-level-loading-icon");
+        $page.append(loading);
+      }
     }
 
     removeLoadingIcon() {
-      var loading = document.querySelector("span.loading-icon");
+      var loading = document.querySelector("span.contact-level-loading-icon");
       loading.style.display = "none";
     }
 
-    renderPage() {
-      this.addLoadingIcon();
-      this.makeRequest({
-        method: "get",
-        path: "settings/get-custom-fields",
-        successful: response => {
-          this.leadFields = response["leadFields"];
-
-          this.companyStringFields = response["companyStringFields"];
-          this.companyNumericFields = response["companyNumericFields"];
-          this.contactStringFields = response["contactStringFields"];
-          this.contactNumericFields = response["contactNumericFields"];
-
-          this.renderSkeleton(() => {
-            this.removeLoadingIcon();
-            this.addTabButtonsListeners();
-            this.renderContactAndCompanyTabs().then(() => {
-              this.addContactTabButtonListeners();
-              this.addCompanyTabButtonListeners();
-              this.disableRunCheckIfRunning();
-            });
-            this.renderStatusTab(() => this.addStatusTabButtonListeners());
-          });
-        },
-      });
-    }
-
-    destroy() {
-      this.isDestroyed = true;
-    }
-  }
-
-  return function () {
-    let self = this;
-    let widget = new Widget(this, templatesRenderer(this));
-    this.callbacks = {
-      init: function () {
-        var settings = self.get_settings();
+    addCss() {
+      if (!this.isDestroyed) {
+        var settings = this.widget.get_settings();
         var styles = [
           "style.css",
           "status-tab.css",
@@ -669,7 +636,55 @@ define(["./templates.js"], function (templatesRenderer) {
               " type='text/css' rel='stylesheet'>"
           );
         });
+      }
+    }
 
+    renderPage() {
+      if (!this.isDestroyed) {
+        this.addLoadingIcon();
+        this.makeRequest({
+          method: "get",
+          path: "settings/get-custom-fields",
+          successful: response => {
+            this.leadFields = response["leadFields"];
+            this.addCss();
+            this.companyStringFields = response["companyStringFields"];
+            this.companyNumericFields = response["companyNumericFields"];
+            this.contactStringFields = response["contactStringFields"];
+            this.contactNumericFields = response["contactNumericFields"];
+            if (!this.isDestroyed) {
+              this.renderSkeleton(() => {
+                if (!this.isDestroyed) {
+                  this.removeLoadingIcon();
+                  this.addTabButtonsListeners();
+                  this.renderContactAndCompanyTabs().then(() => {
+                    if (!this.isDestroyed) {
+                      this.addContactTabButtonListeners();
+                      this.addCompanyTabButtonListeners();
+                      this.disableRunCheckIfRunning();
+                    }
+                  });
+                  this.renderStatusTab(() =>
+                    this.addStatusTabButtonListeners()
+                  );
+                }
+              });
+            }
+          },
+        });
+      }
+    }
+
+    destroy() {
+      this.isDestroyed = true;
+    }
+  }
+
+  return function () {
+    let self = this;
+    let widget = new Widget(this, templatesRenderer(this));
+    this.callbacks = {
+      init: function () {
         return true;
       },
       advancedSettings: function () {

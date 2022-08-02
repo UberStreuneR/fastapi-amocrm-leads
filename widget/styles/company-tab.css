@@ -1,60 +1,30 @@
-#company-tab.active {
+#contact-level #company-tab.active {
   display: inline-flex;
 }
 
-#company-tab {
+#contact-level #company-tab {
   flex-direction: column;
 }
 
-#company-tab input,
-#company-tab .control--select {
+#contact-level #company-tab input,
+#contact-level #company-tab .control--select {
   width: 300px;
 }
 
-#company-tab > div {
+#contact-level #company-tab > div {
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
 
-#company-tab > div > span {
+#contact-level #company-tab > div > span {
   margin-right: 0.5rem;
 }
 
-#company-tab > div:not(:last-of-type) {
+#contact-level #company-tab > div:not(:last-of-type) {
   margin-bottom: 0.5rem;
 }
 
-#company-tab-buttons {
+#contact-level #company-tab-buttons {
   justify-content: space-around !important;
 }
-
-/* #company-tab-buttons button {
-  padding: 1rem;
-  border-radius: 4px;
-  height: 30px;
-  margin-top: 1rem;
-  margin-left: 7px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-#company-tab-buttons button:active {
-  transform: scale(0.9);
-}
-#company-tab-buttons #runCheck {
-  background-color: #c4c4c4;
-}
-#company-tab-buttons #runCheck:disabled {
-  pointer-events: none;
-}
-
-#company-tab-buttons #save {
-  background-color: #4b79bb;
-  width: 6rem;
-  color: white;
-}
-#company-tab-buttons #save:active {
-  background-color: #295799;
-} */

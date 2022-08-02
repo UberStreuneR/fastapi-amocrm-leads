@@ -1,22 +1,22 @@
 [data-content-tab] {
   display: none;
 }
-#work_area {
+#work_area #contact-level {
   background-color: white;
-  padding-bottom: 1rem;
+  padding: 1rem;
 }
 
-#buttons button {
+#contact-level #buttons button {
   border: 0;
   background-color: white;
   margin-right: 1rem;
   cursor: pointer;
 }
-#buttons button.active {
+#contact-level #buttons button.active {
   font-weight: bold;
 }
 
-#buttons button.active::after {
+#contact-level #buttons button.active::after {
   content: "";
   display: block;
   height: 2px;
@@ -25,14 +25,14 @@
   background-color: #4b79bb;
 }
 
-hr {
+#contact-level hr {
   padding: 1px 0px;
   background-color: #e0e0e0;
   margin: 1rem 0;
   border: none;
 }
 
-.loading-icon {
+.contact-level-loading-icon {
   display: block;
   height: 40px;
   width: 40px;
@@ -50,8 +50,8 @@ hr {
   }
 }
 
-#contact-tab-buttons button,
-#company-tab-buttons button {
+#contact-level #contact-tab-buttons button,
+#contact-level #company-tab-buttons button {
   padding: 1rem;
   border-radius: 4px;
   /* width: 11rem; */
@@ -64,33 +64,33 @@ hr {
   cursor: pointer;
 }
 
-#contact-tab-buttons button:active,
-#company-tab-buttons button:active {
+#contact-level #contact-tab-buttons button:active,
+#contact-level #company-tab-buttons button:active {
   transform: scale(0.9);
 }
 
-#runCheck {
+#contact-level #runCheck {
   background-color: #c4c4c4;
   /* width: 11.5rem; */
 }
-#runCheck:disabled {
+#contact-level #runCheck:disabled {
   pointer-events: none;
 }
 
-#save {
+#contact-level #save {
   background-color: #4b79bb;
   /* width: 6rem; */
   color: white;
 }
-#save:active {
+#contact-level #save:active {
   background-color: #295799;
 }
 
-#save.saved {
+#contact-level #save.saved {
   background-color: #26b04f;
 }
 
-#save:disabled {
+#contact-level #save:disabled {
   background-color: #7eacee !important;
   pointer-events: none;
 }

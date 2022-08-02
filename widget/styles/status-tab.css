@@ -1,21 +1,21 @@
-#status-tab.active {
+#contact-level #status-tab.active {
   display: block;
 }
 
-#status-tab table {
+#contact-level #status-tab table {
   border-spacing: 0.5rem 0.3rem;
   border-collapse: unset;
 }
 
-#status-tab table td {
+#contact-level #status-tab table td {
   vertical-align: bottom;
 }
 
-#status-tab #rule input {
+#contact-level #status-tab #rule input {
   width: 8rem;
 }
 
-#delete-row-icon {
+#contact-level #delete-row-icon {
   background-image: url("../images/cross.jpg");
   background-size: cover;
   background-repeat: no-repeat;
@@ -25,20 +25,20 @@
   width: 40px;
 }
 
-#delete-row-div {
+#contact-level #delete-row-div {
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
 
-#status-tab-buttons {
+#contact-level #status-tab-buttons {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
 }
 
-#status-tab-buttons button {
+#contact-level #status-tab-buttons button {
   padding: 1rem;
   border-radius: 4px;
   min-width: 11rem;
@@ -51,11 +51,11 @@
   cursor: pointer;
 }
 
-#status-tab-buttons button:active {
+#contact-level #status-tab-buttons button:active {
   transform: scale(0.9);
 }
 
-#status-tab-buttons #addRow {
+#contact-level #status-tab-buttons #addRow {
   background-color: white;
   font-weight: bold;
   border: 1px solid lightgrey;
@@ -66,7 +66,7 @@
   color: white;
 } */
 
-.control--select--list-opened {
+#contact-level .control--select--list-opened {
   min-width: 100%;
   width: auto;
 }

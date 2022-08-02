@@ -1,61 +1,30 @@
-#contact-tab.active {
+#contact-level #contact-tab.active {
   display: inline-flex;
 }
 
-#contact-tab {
+#contact-level #contact-tab {
   flex-direction: column;
 }
 
-#contact-tab input,
-#contact-tab .control--select {
+#contact-level #contact-tab input,
+#contact-level #contact-tab .control--select {
   width: 300px;
 }
 
-#contact-tab > div {
+#contact-level #contact-tab > div {
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
 
-#contact-tab > div > span {
+#contact-level #contact-tab > div > span {
   margin-right: 0.5rem;
 }
 
-#contact-tab > div:not(:last-of-type) {
+#contact-level #contact-tab > div:not(:last-of-type) {
   margin-bottom: 0.5rem;
 }
 
-#contact-tab-buttons {
+#contact-level #contact-tab-buttons {
   justify-content: space-around !important;
 }
-
-/* #contact-tab-buttons button {
-  padding: 1rem;
-  border-radius: 4px;
-  height: 30px;
-  margin-top: 1rem;
-  margin-left: 7px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-#contact-tab-buttons button:active {
-  transform: scale(0.9);
-}
-
-#contact-tab-buttons #runCheck {
-  background-color: #c4c4c4;
-}
-#contact-tab-buttons #runCheck:disabled {
-  pointer-events: none;
-}
-
-#contact-tab-buttons #save {
-  background-color: #4b79bb;
-  color: white;
-}
-#contact-tab-buttons #save:active {
-  background-color: #295799;
-} */
