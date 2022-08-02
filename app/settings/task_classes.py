@@ -12,6 +12,7 @@ class EntityCheck(app.Task):
 
     def after_return(self, *args, **kwargs) -> None:
         self.session.commit()
+        self.session.close()
 
 
 class ContactCheck(EntityCheck):

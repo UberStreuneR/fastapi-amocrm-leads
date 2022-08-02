@@ -14,6 +14,7 @@ def handle_hook_on_background(request_data, ignore_result=True) -> None:
 
     handler = HookHandler(contact_manager, company_manager, amocrm)
     handler.handle(request_data)
+    session.close()
 
 
 @app.task(base=ContactCheck, bind=True, ignore_result=True)
