@@ -244,13 +244,14 @@ class AmoCRM:
         return data
 
     def _make_many_patch_request_data(self, entries: List[dict]) -> List[dict]:
-        data = []
-        for entry in entries:
-            entry_data = {"id": entry["id"]}
-            entry_data.update(self._make_patch_request_data(
-                entry["field_id"], entry["value"]))
-            data.append(entry_data)
-        return data
+        # data = {}
+        # for entry in entries:
+        #     entry_data = {"id": entry["id"]}
+        #     entry_data.update(self._make_patch_request_data(
+        #         entry["field_id"], entry["value"]))
+        #     data.append(entry_data)
+        # return data
+        return entries
 
     def set_company_field(self, company_id: int, company_field_id: int, value: int) -> dict:
         data = self._make_patch_request_data(company_field_id, value)

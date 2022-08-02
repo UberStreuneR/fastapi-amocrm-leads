@@ -60,7 +60,7 @@ class EntityManager(ABC):
                     {"field_id": field_id, "values": [{"value": value}]})
                 return
         self._update_values.append(
-            {"id": entity_id, "field_id": field_id, "value": value})
+            {"id": entity_id, "custom_fields_values": [{"field_id": field_id, "values": [{"value": value}]}]})
 
     def set_field_if_different(self, entity_id: int, field_id: int, value: Union[str, int], entity_data) -> None:
         try:
@@ -111,23 +111,23 @@ class EntityManager(ABC):
                 self.apply_one_status_setting(
                     entity_id, status_setting, sum_, entity_data)
 
-    @abstractmethod
+    @ abstractmethod
     def check(self):
         pass
 
-    @abstractmethod
+    @ abstractmethod
     def run_check(self):
         pass
 
 
 class CompanyManager(EntityManager):
-    @property
+    @ property
     def setting(self) -> CompanySetting:
         if self._setting is None:
             self._setting = services.get_company_setting(self._session)
         return self._setting
 
-    @property
+    @ property
     def status_settings(self) -> List[StatusSetting]:
         if self._status_settings is None:
             self._status_settings = services.get_status_settings_for_company(
@@ -167,13 +167,13 @@ class CompanyManager(EntityManager):
 
 
 class ContactManager(EntityManager):
-    @property
+    @ property
     def setting(self) -> ContactSetting:
         if self._setting is None:
             self._setting = services.get_contact_setting(self._session)
         return self._setting
 
-    @property
+    @ property
     def status_settings(self) -> List[StatusSetting]:
         if self._status_settings is None:
             self._status_settings = services.get_status_settings_for_contact(
