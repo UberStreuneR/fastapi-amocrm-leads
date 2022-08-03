@@ -1,6 +1,6 @@
 #!/bin/sh
 
-[ -z $RABBIT_HOST ] && RABBIT_HOST="rabbitmq"
+[ -z $RABBIT_HOST ] && RABBIT_HOST="contact_level_rabbitmq"
 [ -z $RABBIT_PORT ] && RABBIT_PORT="5672"
 
 echo "Waiting for RabbitMQ..."
