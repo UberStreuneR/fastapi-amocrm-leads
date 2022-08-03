@@ -4,7 +4,7 @@ services:
   app:
     build: .
     restart: unless-stopped
-    container_name: app
+    container_name: contact_level_app
     command: sh -c "uvicorn app.main:app --reload --host 0.0.0.0 --port 80"
     labels:
       - "traefik.enable=true"
@@ -32,7 +32,7 @@ services:
   worker:
     build: .
     restart: unless-stopped
-    container_name: worker
+    container_name: contact_level_worker
     command: ./app/worker.sh
     env_file:
       - ./.prod.env
@@ -41,7 +41,7 @@ services:
 
   rabbitmq:
     restart: unless-stopped
-    container_name: rabbitmq
+    container_name: contact_level_rabbitmq
     image: "rabbitmq:3.10.5"
 
 networks:
