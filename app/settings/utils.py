@@ -154,9 +154,9 @@ class CompanyManager(EntityManager):
         amount = len(success_leads)
         self.apply_status_settings(company_id, sum_, amount, company_data)
 
-        if last_full_payment is not None:
-            self.set_field(
-                company_id, settings.company_last_payment_field, last_full_payment)
+        # if last_full_payment is not None:
+        # self.set_field(
+        # company_id, settings.company_last_payment_field, last_full_payment)
 
         self.set_field_if_different(
             company_id, self.setting.company_field_id, sum_, company_data)
