@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from app.database import get_session
 from sqlmodel import Session
-from .schemas import IntegrationInstall, Integration
+from .schemas import IntegrationInstall, Integration, IntegrationUpdate
 from . import services
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
@@ -41,10 +41,10 @@ def get_first_integration(session: Session = Depends(get_session)) -> Integratio
     return services.get_first_integration(session)
 
 
-# @router.post("/corrupt-integration")
-# def corrupt(session: Session = Depends(get_session)):
-#     integration = services.get_first_integration(session)
-#     update = IntegrationUpdate(
-#         access_token="some-corrupted-value", refresh_token=integration.refresh_token)
-#     integration.update(session, **update.dict())
-#     session.commit()
+@router.post("/corrupt-integration")
+def corrupt(session: Session = Depends(get_session)):
+    integration = services.get_first_integration(session)
+    update = IntegrationUpdate(
+        access_token="some-corrupted-value", refresh_token=integration.refresh_token)
+    integration.update(session, **update.dict())
+    session.commit()
