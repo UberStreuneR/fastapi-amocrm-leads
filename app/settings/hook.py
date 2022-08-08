@@ -21,7 +21,6 @@ class HookHandler:
             self.manager.contacts, self.manager.leads, session)
         self._company_checker = CompanyChecker(
             self.manager.companies, self.manager.leads, session)
-        self._amocrm = amocrm
 
     # У этого контакта есть только id и ссылка
 

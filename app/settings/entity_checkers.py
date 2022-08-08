@@ -173,7 +173,7 @@ class CompanyChecker(EntityChecker):
         self.update_active_leads(active_leads, sum_)
 
     def run_check(self) -> None:
-        for company in self._amocrm.get_many_companies():
+        for company in self._manager.get_many():
             self.check(company["id"], company)
         self.set_many_fields()
 
@@ -205,6 +205,6 @@ class ContactChecker(EntityChecker):
         self.update_active_leads(active_leads, amount)
 
     def run_check(self) -> None:
-        for contact in self._amocrm.get_many_contacts():
+        for contact in self._manager.get_many():
             self.check(contact["id"], contact)
         self.set_many_fields()
