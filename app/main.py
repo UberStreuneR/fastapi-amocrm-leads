@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.openapi.docs import (
     get_swagger_ui_html,
@@ -6,8 +6,10 @@ from fastapi.openapi.docs import (
 )
 from starlette.middleware.cors import CORSMiddleware
 from app.integrations.routes import router as integrations_router
+from app.integrations.deps import get_amocrm_from_first_integration
 from app.settings.routes import router as settings_router
 from app.settings import services
+from app.amocrm.settings import SettingsSetter
 from sqlmodel import SQLModel, Session
 from .database import engine
 
@@ -30,6 +32,12 @@ async def on_startup():
     services.set_company_check_status(session, False)
     services.set_contact_check_status(session, False)
     session.commit()
+    try:
+        amocrm = get_amocrm_from_first_integration()
+        SettingsSetter(amocrm)
+    except HTTPException:
+        pass
+
 
 """Для отображения docs, в силу того что дефолтный cdn не подгружается"""
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

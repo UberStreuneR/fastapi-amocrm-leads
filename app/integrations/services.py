@@ -59,10 +59,10 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         data = IntegrationUpdate(
             access_token=access_token, refresh_token=refresh_token)
         update_integration(session, integration, data)
-        settings_setter = SettingsSetter(instance)
-        settings_setter.set_pipeline_id()
-        settings_setter.set_success_stage_id()
-        settings_setter.set_inactive_stage_ids()
+        SettingsSetter(instance)
+        # settings_setter.set_pipeline_id()
+        # settings_setter.set_success_stage_id()
+        # settings_setter.set_inactive_stage_ids()
         instance.create_hook()
         session.commit()
 
