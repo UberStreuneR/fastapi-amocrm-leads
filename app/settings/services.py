@@ -92,13 +92,15 @@ def get_company_check_status(session: Session) -> bool:
 
 
 def get_stage_ids(session: Session) -> StageIds:
-    return session.query(StageIds).first()
+    instance = session.query(StageIds).first()
+    if instance is None:
+        return StageIds.create(session)
+    return instance
 
 
 def set_stage_ids(session: Session, update_data: UpdateStageIds) -> StageIds:
     instance = session.query(StageIds).first()
     if instance is None:
-        instance = StageIds.create(session, **update_data.dict())
-    else:
-        instance.update(session, **update_data.dict())
+        return StageIds.create(session, **update_data.dict())
+    instance.update(session, **update_data.dict())
     return instance
