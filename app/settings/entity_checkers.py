@@ -158,7 +158,7 @@ class CompanyChecker(EntityChecker):
         return self._status_settings
 
     def check(self, company_id, company_data) -> None:
-        success_leads, active_leads, last_full_payment = self.get_success_leads(
+        success_leads, active_leads = self.get_success_leads(
             company_id, months=self.setting.months)
         sum_ = sum(success_leads)
         amount = len(success_leads)

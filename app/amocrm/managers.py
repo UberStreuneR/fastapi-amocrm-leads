@@ -78,7 +78,7 @@ class ContactManager(EntityManager):
             "get", f"/api/v4/contacts/{contact_id}", data)
         return response["_embedded"]["leads"]
 
-    def get_success_leads(self, contact_id: int, months: int):
+    def get_success_leads(self, contact_id: int, months: int) -> Tuple[List[dict], List[int]]:
         leads = self.get_leads(contact_id)
         return get_success_and_active_leads(LeadManager(self.amocrm, self.session), months, leads)
 
