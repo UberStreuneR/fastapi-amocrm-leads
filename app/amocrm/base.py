@@ -2,11 +2,14 @@ from .exceptions import (UnexpectedResponseCustomException,
                          BadResponseCustomException,
                          NotAuthorizedCustomException)
 from app.app_settings import settings
-
 import requests
 import time
 
+
 from typing import Callable, Union, List, Generator
+
+from app.integrations.deps import get_logger
+logger = get_logger()
 
 
 class AmoCRM:
@@ -102,6 +105,7 @@ class AmoCRM:
             raise BadResponseCustomException
         elif response.status_code >= 300:
             raise UnexpectedResponseCustomException
+        logger.info(f"Response: {response.status_code} {response.json()}")
         return response.json()
 
     def get_many(
