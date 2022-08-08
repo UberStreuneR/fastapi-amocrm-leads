@@ -39,6 +39,6 @@ class SettingsSetter:
                 "get", "api/v4/leads/pipelines")
             for pipeline in response["_embedded"]["pipelines"]:
                 for status in pipeline["_embedded"]["statuses"]:
-                    if not status["is_editable"]:
+                    if not status["is_editable"] and not status['id'] in inactive_statuses:
                         inactive_statuses.append(status["id"])
         settings.inactive_stage_ids = inactive_statuses
