@@ -13,7 +13,7 @@ def get_lead_id(link) -> int:
     """Из пути к сделке получить ее id"""
 
     path = get_lead_path(link)
-    return int(path[path.find("/")+1:])
+    return path[-(path[::-1].find("/")):]
 
 
 def check_lead_younger_than(lead: dict, months: int) -> bool:
