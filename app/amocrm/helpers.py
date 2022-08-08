@@ -1,6 +1,8 @@
 from app.app_settings import settings
 from datetime import datetime, timedelta
 from typing import Union, List, Generator, Tuple
+from celery.utils.log import get_task_logger
+logger = get_task_logger(__name__)
 
 
 def get_lead_path(link) -> str:
@@ -36,6 +38,9 @@ def check_lead_is_in_success_stage(lead: dict) -> bool:
 
 def check_lead_is_active(lead: dict) -> bool:
     """Проверить, что сделка активна"""
+
+    logger.info(
+        f"Status id: {lead['status_id']}, inactive_stage_ids: {settings.inactive_stage_ids}")
 
     if lead["status_id"] not in settings.inactive_stage_ids:
         return True
