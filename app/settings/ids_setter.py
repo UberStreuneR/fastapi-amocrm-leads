@@ -21,7 +21,9 @@ class StageIdsSetter:
                 "get", "api/v4/leads/pipelines")
             for pipeline in response["_embedded"]["pipelines"]:
                 if pipeline["name"] == "Продажа":
-                    return pipeline["id"]
+                    self.stage_ids.pipeline_id = pipeline["id"]
+                    self.session.flush()
+                    return
 
     def get_success_stage_id(self) -> int:
         """Получить id этапа Закрыто, оплата получена"""
@@ -31,7 +33,9 @@ class StageIdsSetter:
                 "get", f"api/v4/leads/pipelines/{self.stage_ids.pipeline_id}")
             for status in response["_embedded"]["statuses"]:
                 if status["name"] == "Закрыто. Оплата получена":
-                    return status["id"]
+                    self.stage_ids.success_stage_id = status["id"]
+                    self.session.flush()
+                    return
 
     def get_inactive_stage_ids(self) -> List[int]:
         """Получить ids неактивных этапов"""
@@ -44,12 +48,14 @@ class StageIdsSetter:
                 for status in pipeline["_embedded"]["statuses"]:
                     if not status["is_editable"] and not status['id'] in inactive_statuses:
                         inactive_statuses.append(status["id"])
-        return inactive_statuses
+        self.stage_ids.inactive_stage_ids = inactive_statuses
+        self.session.flush()
 
     def set_ids(self) -> None:
-        pipeline_id = self.get_pipeline_id()
-        success_stage_id = self.get_success_stage_id()
-        inactive_stage_ids = self.get_inactive_stage_ids()
-        update_data = UpdateStageIds(
-            pipeline_id, success_stage_id, inactive_stage_ids)
-        services.set_stage_ids(self.session, update_data)
+        self.get_pipeline_id()
+        self.get_success_stage_id()
+        self.get_inactive_stage_ids()
+        self.session.commit()
+        # update_data = UpdateStageIds(
+        #     pipeline_id, success_stage_id, inactive_stage_ids)
+        # services.set_stage_ids(self.session, update_data)
