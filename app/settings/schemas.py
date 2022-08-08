@@ -1,6 +1,6 @@
 from app.database import DatabaseModel
 from pydantic import BaseModel
-from sqlmodel import Field
+from sqlmodel import Field, ARRAY, Column, Integer
 from typing import Optional, List
 
 
@@ -47,7 +47,7 @@ class CompanyCheckStatus(DatabaseModel, BaseModel, table=True):
 class UpdateStageIds(BaseModel):
     pipeline_id: Optional[int] = None
     success_stage_id: Optional[int] = None
-    inactive_stage_ids: Optional[List[int]] = None
+    array: Optional[List[int]] = Field(sa_column=Column(ARRAY(Integer)))
 
 
 class StageIds(DatabaseModel, UpdateStageIds, table=True):
