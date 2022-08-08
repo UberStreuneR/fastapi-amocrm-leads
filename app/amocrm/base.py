@@ -110,10 +110,10 @@ class AmoCRM:
         if response.status_code == 401:
             raise NotAuthorizedCustomException(response)
         elif response.status_code == 400:
-            raise BadResponseCustomException
+            raise BadResponseCustomException(response)
         elif response.status_code >= 300:
-            raise UnexpectedResponseCustomException
-        logger.info(f"Response: {response.status_code} {response.json()}")
+            raise UnexpectedResponseCustomException(response)
+        # logger.info(f"Response: {response.status_code} {response.json()}")
         return response.json()
 
     def get_many(
@@ -127,11 +127,13 @@ class AmoCRM:
         params.update({"page": 1, "limit": limit})
 
         while True:
-            result = self.make_request("get", path, params)
+            try:
+                result = self.make_request("get", path, params)
             # Сервер может вернуть 204 код, при определенных фильтрах, это означает,
             # что сущностей подходящих под этот фильтр не найдено
-            if result.status_code == 204:
-                break
+            except UnexpectedResponseCustomException as e:
+                if e.response.status_code == 204:
+                    break
 
             yield from result["_embedded"][entity]
             if "next" not in result["_links"]:
