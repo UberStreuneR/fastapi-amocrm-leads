@@ -8,13 +8,15 @@ from .helpers import (get_success_and_active_leads,
 
 import json
 from typing import Generator, List
+from sqlmodel import Session
 
 
 class EntityManager(ABC):
     """Базовый класс для запросов к сущностям AmoCRM"""
 
-    def __init__(self, amocrm: AmoCRM) -> None:
+    def __init__(self, amocrm: AmoCRM, session: Session) -> None:
         self.amocrm = amocrm
+        self.session = session
 
     @abstractmethod
     def get_one(self):
@@ -78,7 +80,7 @@ class ContactManager(EntityManager):
 
     def get_success_leads(self, contact_id: int, months: int):
         leads = self.get_leads(contact_id)
-        return get_success_and_active_leads(LeadManager(self.amocrm), months, leads)
+        return get_success_and_active_leads(LeadManager(self.amocrm, self.session), months, leads)
 
     def set_field(self, contact_id: int, contact_field_id: int, value: int) -> dict:
         data = make_patch_request_data(contact_field_id, value)
@@ -113,7 +115,7 @@ class CompanyManager(EntityManager):
 
     def get_success_leads(self, company_id: int, months: int):
         leads = self.get_leads(company_id)
-        return get_success_and_active_leads(LeadManager(self.amocrm), months, leads)
+        return get_success_and_active_leads(LeadManager(self.amocrm, self.session), months, leads)
 
     def set_field(self, company_id: int, company_field_id: int, value: int) -> dict:
         data = make_patch_request_data(company_field_id, value)
@@ -131,9 +133,6 @@ class CompanyManager(EntityManager):
 
 class LeadManager(EntityManager):
     """Класс для запроса по сделкам AmoCRM"""
-
-    def __init__(self, amocrm: AmoCRM):
-        self.amocrm = amocrm
 
     def get_one(self, lead_id) -> dict:
         return self.amocrm.make_request(
@@ -170,10 +169,10 @@ class LeadManager(EntityManager):
 class MetaManager:
     """Объединяющий класс"""
 
-    def __init__(self, amocrm: AmoCRM):
-        self.contacts = ContactManager(amocrm)
-        self.companies = CompanyManager(amocrm)
-        self.leads = LeadManager(amocrm)
+    def __init__(self, amocrm: AmoCRM, session: Session):
+        self.contacts = ContactManager(amocrm, session)
+        self.companies = CompanyManager(amocrm, session)
+        self.leads = LeadManager(amocrm, session)
 
     def get_custom_fields(self) -> dict:
         """Получить кастомные поля для всех сущностей"""

@@ -1,5 +1,5 @@
 from app.amocrm.base import AmoCRM
-from app.amocrm.settings import SettingsSetter
+from app.settings.ids_setter import StageIdsSetter
 from .schemas import IntegrationInstall, Integration, IntegrationUpdate
 from app.app_settings import get_settings
 
@@ -59,10 +59,8 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         data = IntegrationUpdate(
             access_token=access_token, refresh_token=refresh_token)
         update_integration(session, integration, data)
-        SettingsSetter(instance)
-        # settings_setter.set_pipeline_id()
-        # settings_setter.set_success_stage_id()
-        # settings_setter.set_inactive_stage_ids()
+        setter = StageIdsSetter(instance, session)
+        setter.set_ids()
         instance.create_hook()
         session.commit()
 

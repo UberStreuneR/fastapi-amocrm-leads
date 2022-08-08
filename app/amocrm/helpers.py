@@ -1,4 +1,5 @@
 from app.app_settings import get_settings
+from app.settings.services import get_stage_ids
 from datetime import datetime, timedelta
 from typing import Union, List, Generator, Tuple
 from celery.utils.log import get_task_logger
@@ -28,24 +29,24 @@ def check_lead_younger_than(lead: dict, months: int) -> bool:
     return True
 
 
-def check_lead_is_in_success_stage(lead: dict) -> bool:
+def check_lead_is_in_success_stage(lead: dict, stage_ids) -> bool:
     """Проверить, что сделка находится в разделе Продажа на этапе Закрыто, оплата получена"""
-    settings = get_settings()
+    # settings = get_settings()
 
-    if lead["status_id"] == settings.success_stage_id and lead["pipeline_id"] == settings.pipeline_id:
+    if lead["status_id"] == stage_ids.success_stage_id and lead["pipeline_id"] == stage_ids.pipeline_id:
         return True
     return False
 
 
-def check_lead_is_active(lead: dict) -> bool:
+def check_lead_is_active(lead: dict, stage_ids) -> bool:
     """Проверить, что сделка активна"""
 
-    settings = get_settings()
+    # settings = get_settings()
 
     logger.info(
-        f"Status id: {lead['status_id']}, inactive_stage_ids: {settings.inactive_stage_ids}")
+        f"Status id: {lead['status_id']}, inactive_stage_ids: {stage_ids.inactive_stage_ids}")
 
-    if lead["status_id"] not in settings.inactive_stage_ids:
+    if lead["status_id"] not in stage_ids.inactive_stage_ids:
         return True
     return False
 
@@ -118,12 +119,14 @@ def get_success_and_active_leads(lead_manager, months, leads) -> Tuple[List[dict
 
     success_leads = []
     active_leads = []
+    stage_ids = get_stage_ids(lead_manager.session)
+
     for lead in leads:
         lead_id = get_lead_id(lead["_links"]["self"]["href"])
         lead_data = lead_manager.get_one(lead_id)
-        if check_lead_is_in_success_stage(lead_data) and check_lead_younger_than(lead_data, months):
+        if check_lead_is_in_success_stage(lead_data, stage_ids) and check_lead_younger_than(lead_data, months):
             success_leads.append(lead_data["price"])
-        elif check_lead_is_active(lead_data):
+        elif check_lead_is_active(lead_data, stage_ids):
             active_leads.append(lead_data["id"])
     return success_leads, active_leads
 

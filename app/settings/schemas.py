@@ -1,7 +1,7 @@
 from app.database import DatabaseModel
 from pydantic import BaseModel
 from sqlmodel import Field
-from typing import Optional
+from typing import Optional, List
 
 
 class StatusSetting(DatabaseModel, BaseModel, table=True):
@@ -42,3 +42,13 @@ class ContactCheckStatus(DatabaseModel, BaseModel, table=True):
 class CompanyCheckStatus(DatabaseModel, BaseModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     running: bool = False
+
+
+class UpdateStageIds(BaseModel):
+    pipeline_id: Optional[int] = None
+    success_stage_id: Optional[int] = None
+    inactive_stage_ids: Optional[List[int]] = None
+
+
+class StageIds(DatabaseModel, UpdateStageIds, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)

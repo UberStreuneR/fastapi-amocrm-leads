@@ -9,7 +9,7 @@ from app.integrations.routes import router as integrations_router
 from app.integrations.deps import get_amocrm_from_first_integration
 from app.settings.routes import router as settings_router
 from app.settings import services
-from app.amocrm.settings import SettingsSetter
+from app.settings.ids_setter import StageIdsSetter
 from sqlmodel import SQLModel, Session
 from .database import engine
 
@@ -34,7 +34,8 @@ async def on_startup():
     session.commit()
     try:
         amocrm = get_amocrm_from_first_integration()
-        SettingsSetter(amocrm)
+        setter = StageIdsSetter(amocrm, session)
+        setter.set_ids()
     except HTTPException:
         pass
 

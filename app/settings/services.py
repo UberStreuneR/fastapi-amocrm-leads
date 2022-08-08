@@ -1,4 +1,4 @@
-from .schemas import StatusSetting, ContactSetting, CompanySetting, ContactCheckStatus, CompanyCheckStatus
+from .schemas import StatusSetting, ContactSetting, CompanySetting, ContactCheckStatus, CompanyCheckStatus, StageIds, UpdateStageIds
 from sqlmodel import Session
 from typing import List
 
@@ -89,3 +89,16 @@ def get_company_check_status(session: Session) -> bool:
     if instance is None:
         return False
     return instance.running
+
+
+def get_stage_ids(session: Session) -> StageIds:
+    return session.query(StageIds).first()
+
+
+def set_stage_ids(session: Session, update_data: UpdateStageIds) -> StageIds:
+    instance = session.query(StageIds).first()
+    if instance is None:
+        instance = StageIds.create(session, **update_data.dict())
+    else:
+        instance.update(session, **update_data.dict())
+    return instance
