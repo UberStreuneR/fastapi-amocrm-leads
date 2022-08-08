@@ -195,7 +195,7 @@ class ContactChecker(EntityChecker):
         return self._status_settings
 
     def check(self, contact_id, contact_data) -> None:
-        success_leads, active_leads, _ = self.get_success_leads(
+        success_leads, active_leads = self.get_success_leads(
             contact_id, months=self.setting.months)
         sum_ = sum(success_leads)
         amount = len(success_leads)

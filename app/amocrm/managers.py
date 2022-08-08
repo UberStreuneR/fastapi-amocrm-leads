@@ -7,7 +7,7 @@ from .helpers import (get_success_and_active_leads,
                       get_value_and_label_from_list)
 
 import json
-from typing import Generator, List
+from typing import Generator, List, Tuple
 from sqlmodel import Session
 
 
@@ -113,7 +113,7 @@ class CompanyManager(EntityManager):
             "get", f"/api/v4/companies/{company_id}", data)
         return response["_embedded"]["leads"]
 
-    def get_success_leads(self, company_id: int, months: int):
+    def get_success_leads(self, company_id: int, months: int) -> Tuple[List[dict], List[int]]:
         leads = self.get_leads(company_id)
         return get_success_and_active_leads(LeadManager(self.amocrm, self.session), months, leads)
 

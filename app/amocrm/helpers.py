@@ -114,7 +114,7 @@ def get_fields_from_many(fields: Generator, field_type: str) -> List[dict]:
     return fields_of_type
 
 
-def get_success_and_active_leads(lead_manager, months, leads) -> Tuple[List[dict], List[int], Union[int, None]]:
+def get_success_and_active_leads(lead_manager, months, leads) -> Tuple[List[dict], List[int]]:
     """Получить успешные и активные сделки"""
 
     success_leads = []
