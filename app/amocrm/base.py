@@ -7,17 +7,7 @@ import time
 
 
 from typing import Callable, Union, List, Generator
-
-import logging
-import sys
-logging.basicConfig(
-    format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
-    level=logging.DEBUG,
-    datefmt="%H:%M:%S",
-    stream=sys.stderr,
-)
-logger = logging.getLogger("Sockets")
-logging.getLogger("chardet.charsetprober").disabled = True
+from app.logger import logger
 
 
 class AmoCRM:
@@ -54,7 +44,7 @@ class AmoCRM:
         """client_id интеграции"""
         return self._client_id
 
-    def _authorize(self, grant_type: str, token: str) -> None:
+    def authorize(self, grant_type: str, token: str) -> None:
         """
         Пройти авторизацию с указанным grant_type,
         поддерживаются refresh_token и authorization_code
@@ -102,9 +92,9 @@ class AmoCRM:
             # Если вернулся код 401 и этот запрос не связан с авторизацией, то мы
             # поочередно пробуем авторизоваться через refresh_token и authorization_code
             try:
-                self._authorize("refresh_token", self._refresh_token)
+                self.authorize("refresh_token", self._refresh_token)
             except UnexpectedResponseCustomException:
-                self._authorize("authorization_code", self._auth_code)
+                self.authorize("authorization_code", self._auth_code)
 
             return self.make_request(method, path, data)
 
