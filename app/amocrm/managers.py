@@ -144,7 +144,7 @@ class LeadManager(EntityManager):
 
         generator = self.amocrm.get_many(
             "custom_fields", f"/api/v4/leads/custom_fields")
-        numeric_fields = self.get_fields_from_many(generator, field_type)
+        numeric_fields = get_fields_from_many(generator, field_type)
         return get_value_and_label_from_list(numeric_fields)
 
     def set_field(self, lead_id: int, lead_field_id: int, value: int) -> dict:
