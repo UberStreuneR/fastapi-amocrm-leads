@@ -1,7 +1,7 @@
-from pydantic import BaseModel
 from app.database import DatabaseModel
-from typing import Union, Optional
+from pydantic import BaseModel
 from sqlmodel import Field
+from typing import Optional
 
 
 class StatusSetting(DatabaseModel, BaseModel, table=True):

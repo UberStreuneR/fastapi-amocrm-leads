@@ -1,7 +1,7 @@
+from app.database import DatabaseModel
+
 from pydantic import BaseModel
 from sqlmodel import Field
-
-from app.database import DatabaseModel
 
 
 class IntegrationBase(BaseModel):

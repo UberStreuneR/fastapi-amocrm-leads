@@ -15,7 +15,7 @@ class EntityCheck(app.Task):
         self.session.close()
 
 
-class ContactCheck(EntityCheck):
+class ContactCheckTask(EntityCheck):
 
     def before_start(self, *args, **kwargs) -> None:
         super().before_start(*args, **kwargs)
@@ -27,7 +27,7 @@ class ContactCheck(EntityCheck):
         super().after_return(*args, **kwargs)
 
 
-class CompanyCheck(EntityCheck):
+class CompanyCheckTask(EntityCheck):
 
     def before_start(self, *args, **kwargs) -> None:
         super().before_start(*args, **kwargs)

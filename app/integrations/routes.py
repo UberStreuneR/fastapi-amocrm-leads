@@ -1,8 +1,10 @@
 from fastapi import APIRouter, Depends, Query
 from app.database import get_session
-from sqlmodel import Session
 from .schemas import IntegrationInstall, Integration, IntegrationUpdate
 from . import services
+
+from sqlmodel import Session
+
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 
@@ -30,6 +32,8 @@ def uninstall_integration(session: Session = Depends(get_session), client_uuid: 
 
 @router.get("/get")
 def get_integrations(session: Session = Depends(get_session)) -> dict:
+    """Получение всех интеграций"""
+
     data = {
         "integrations": services.get_integrations(session),
     }
@@ -38,11 +42,15 @@ def get_integrations(session: Session = Depends(get_session)) -> dict:
 
 @router.get("/get-first")
 def get_first_integration(session: Session = Depends(get_session)) -> Integration:
+    """Получение первой интеграции"""
+
     return services.get_first_integration(session)
 
 
 @router.post("/corrupt-integration")
 def corrupt(session: Session = Depends(get_session)):
+    """Тестовый эндпоинт, который делает интеграцию невалидной"""
+
     integration = services.get_first_integration(session)
     update = IntegrationUpdate(
         access_token="some-corrupted-value", refresh_token=integration.refresh_token)

@@ -1,13 +1,15 @@
 from fastapi import HTTPException, Depends
+
+from app.amocrm.base import AmoCRM
+from app.database import get_session
+from app.app_settings import settings
+from . import services
+from .schemas import Integration
+
 from jose import jwt, JWTError
 from sqlmodel import Session
 from starlette import status
 from starlette.requests import Request
-from app.amocrm import AmoCRM
-from app.database import get_session
-from . import services
-from .schemas import Integration
-from app.settings_ import settings
 
 import logging
 from logging import Logger
@@ -50,6 +52,8 @@ def get_amocrm(
 
 
 def get_amocrm_from_first_integration() -> AmoCRM:
+    """Получить объект AmoCRM из первой интеграции (без запроса от AmoCRM-виджета)"""
+
     session = next(get_session())
     integration = services.get_first_integration(session)
     if integration is None:
@@ -58,6 +62,8 @@ def get_amocrm_from_first_integration() -> AmoCRM:
 
 
 def get_logger() -> Logger:
+    """Логгер для приложения"""
+
     logging.basicConfig(
         format="%(asctime)s %(levelname)s:%(name)s: %(message)s",
         level=logging.DEBUG,
