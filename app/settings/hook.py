@@ -16,7 +16,7 @@ class HookHandler:
     """Класс для обработки хука на обновление сделки"""
 
     def __init__(self, amocrm: AmoCRM, session: Session) -> None:
-        self.manager = MetaManager(amocrm)
+        self.manager = MetaManager(amocrm, session)
         self._contact_checker = ContactChecker(
             self.manager.contacts, self.manager.leads, session)
         self._company_checker = CompanyChecker(
