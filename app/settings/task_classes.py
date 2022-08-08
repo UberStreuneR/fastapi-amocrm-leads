@@ -10,7 +10,7 @@ class EntityCheck(app.Task):
     def before_start(self, *args, **kwargs) -> None:
         self.session = next(get_session())
         self.amocrm = get_amocrm_from_first_integration()
-        self.lead_manager = LeadManager(self.amocrm)
+        self.lead_manager = LeadManager(self.amocrm, self.session)
 
     def after_return(self, *args, **kwargs) -> None:
         self.session.commit()
@@ -22,7 +22,7 @@ class ContactCheckTask(EntityCheck):
     def before_start(self, *args, **kwargs) -> None:
         super().before_start(*args, **kwargs)
         services.set_contact_check_status(self.session, True)
-        self.manager = ContactManager(self.amocrm)
+        self.manager = ContactManager(self.amocrm, self.session)
         self.session.commit()
 
     def after_return(self, *args, **kwargs) -> None:
@@ -35,7 +35,7 @@ class CompanyCheckTask(EntityCheck):
     def before_start(self, *args, **kwargs) -> None:
         super().before_start(*args, **kwargs)
         services.set_company_check_status(self.session, True)
-        self.manager = CompanyManager(self.amocrm)
+        self.manager = CompanyManager(self.amocrm, self.session)
         self.session.commit()
 
     def after_return(self, *args, **kwargs) -> None:

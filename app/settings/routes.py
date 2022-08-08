@@ -23,6 +23,11 @@ def get_settings_object():
     return get_settings().dict()
 
 
+@router.get("/stage-ids")
+def get_status_settings(session: Session = Depends(get_session)):
+    return services.get_stage_ids(session)
+
+
 @router.get("/status", status_code=200, response_model=List[StatusSetting])
 def get_status_settings(session: Session = Depends(get_session)):
     """Получить настройки Статуса клиента"""
