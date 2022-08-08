@@ -4,6 +4,8 @@ from abc import ABC, abstractmethod
 from .schemas import CompanySetting, ContactSetting, StatusSetting
 from . import services
 from app.amocrm.managers import EntityManager, LeadManager
+from sqlmodel import Session
+
 from typing import List, Union, Tuple
 
 from celery.utils.log import get_task_logger
@@ -13,7 +15,7 @@ logger = get_task_logger(__name__)
 class EntityChecker(ABC):
     """Базовый класс для проверки сущностей на соответствие настройкам"""
 
-    def __init__(self, manager: EntityManager, lead_manager: LeadManager) -> None:
+    def __init__(self, manager: EntityManager, lead_manager: LeadManager, session: Session) -> None:
         self._setting: CompanySetting = None
         self._status_settings: List[StatusSetting] = None
         # [{"id": ..., "field_id": ..., "value": ...}, ...]
@@ -21,6 +23,7 @@ class EntityChecker(ABC):
         self._update_leads_values = []
         self._lead_manager = lead_manager
         self._manager = manager
+        self._session = session
 
     @property
     @abstractmethod
