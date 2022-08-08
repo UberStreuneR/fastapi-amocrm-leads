@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Request, Response, status
 from app.amocrm.base import AmoCRM
 from app.integrations.deps import get_amocrm, get_session
 from .schemas import ContactSetting, CompanySetting, StatusSetting
-from app.app_settings import settings
+from app.app_settings import get_settings
 from app.settings.schemas import StatusSetting
 from . import services
 from .tasks import company_check, contact_check, handle_hook_on_background
@@ -20,7 +20,7 @@ router = APIRouter(prefix="/settings", tags=["settings"])
 def get_settings_object():
     """Получить настройки приложения"""
 
-    return settings.dict()
+    return get_settings().dict()
 
 
 @router.get("/status", status_code=200, response_model=List[StatusSetting])

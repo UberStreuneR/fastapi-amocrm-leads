@@ -2,7 +2,7 @@ from fastapi import HTTPException, Depends
 
 from app.amocrm.base import AmoCRM
 from app.database import get_session
-from app.app_settings import settings
+from app.app_settings import get_settings
 from . import services
 from .schemas import Integration
 
@@ -25,7 +25,7 @@ def get_auth_data(request: Request) -> dict:
     try:
         return jwt.decode(
             auth_token,
-            settings.client_secret,
+            get_settings().client_secret,
             algorithms=["HS256"],
             options={"verify_aud": False, "verify_nbf": False},
         )

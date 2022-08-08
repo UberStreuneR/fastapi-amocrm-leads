@@ -1,3 +1,4 @@
+from functools import lru_cache
 from pydantic import BaseSettings, PostgresDsn
 from typing import List
 
@@ -14,4 +15,7 @@ class Settings(BaseSettings):
     company_last_payment_field: int
 
 
-settings = Settings()
+@lru_cache
+def get_settings():
+    settings = Settings()
+    return settings

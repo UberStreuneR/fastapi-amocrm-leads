@@ -1,7 +1,7 @@
 from app.amocrm.base import AmoCRM
 from app.amocrm.settings import SettingsSetter
 from .schemas import IntegrationInstall, Integration, IntegrationUpdate
-from app.app_settings import settings
+from app.app_settings import get_settings
 
 from sqlmodel import Session
 
@@ -65,6 +65,8 @@ def make_amocrm(session: Session, integration: Integration) -> AmoCRM:
         # settings_setter.set_inactive_stage_ids()
         instance.create_hook()
         session.commit()
+
+    settings = get_settings()
 
     return AmoCRM(
         account=integration.account,

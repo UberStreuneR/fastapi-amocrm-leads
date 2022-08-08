@@ -1,7 +1,7 @@
 from .exceptions import (UnexpectedResponseCustomException,
                          BadResponseCustomException,
                          NotAuthorizedCustomException)
-from app.app_settings import settings
+from app.app_settings import get_settings
 import requests
 import time
 
@@ -42,6 +42,7 @@ class AmoCRM:
         self._refresh_token = refresh_token
         self._auth_code = auth_code
         self._on_auth = on_auth
+        self.settings = get_settings()
 
     @property
     def url(self) -> str:
@@ -145,7 +146,7 @@ class AmoCRM:
     def create_hook(self) -> Union[dict, None]:
         """Создать хук на изменение сделки"""
 
-        webhook_endpoint = settings.app_host + "settings/handle-hook"
+        webhook_endpoint = self.settings.app_host + "settings/handle-hook"
 
         webhook_post_data = {
             "destination": webhook_endpoint,
@@ -166,6 +167,6 @@ class AmoCRM:
     def delete_hook(self) -> None:
         """Удалить хук на изменение сделки"""
 
-        webhook_endpoint = settings.app_host + "settings/handle-hook"
+        webhook_endpoint = self.settings.app_host + "settings/handle-hook"
         self.make_request("delete", "api/v4/webhooks",
                           {"destination": webhook_endpoint})

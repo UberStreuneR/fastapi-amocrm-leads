@@ -1,4 +1,4 @@
-from app.app_settings import settings
+from app.app_settings import get_settings
 from datetime import datetime, timedelta
 from typing import Union, List, Generator, Tuple
 from celery.utils.log import get_task_logger
@@ -30,6 +30,7 @@ def check_lead_younger_than(lead: dict, months: int) -> bool:
 
 def check_lead_is_in_success_stage(lead: dict) -> bool:
     """Проверить, что сделка находится в разделе Продажа на этапе Закрыто, оплата получена"""
+    settings = get_settings()
 
     if lead["status_id"] == settings.success_stage_id and lead["pipeline_id"] == settings.pipeline_id:
         return True
@@ -38,6 +39,8 @@ def check_lead_is_in_success_stage(lead: dict) -> bool:
 
 def check_lead_is_active(lead: dict) -> bool:
     """Проверить, что сделка активна"""
+
+    settings = get_settings()
 
     logger.info(
         f"Status id: {lead['status_id']}, inactive_stage_ids: {settings.inactive_stage_ids}")
@@ -49,6 +52,8 @@ def check_lead_is_active(lead: dict) -> bool:
 
 def check_lead_is_fully_paid(lead: dict) -> Union[int, None]:
     """Проверить, что сделка полностью оплачена"""
+
+    settings = get_settings()
 
     price = lead["price"]
     try:
