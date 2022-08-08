@@ -47,7 +47,8 @@ class CompanyCheckStatus(DatabaseModel, BaseModel, table=True):
 class UpdateStageIds(BaseModel):
     pipeline_id: Optional[int] = None
     success_stage_id: Optional[int] = None
-    array: Optional[List[int]] = Field(sa_column=Column(ARRAY(Integer)))
+    inactive_stage_ids: Optional[List[int]] = Field(
+        sa_column=Column(ARRAY(Integer)))
 
 
 class StageIds(DatabaseModel, UpdateStageIds, table=True):
