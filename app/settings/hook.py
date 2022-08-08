@@ -5,6 +5,7 @@ from .entity_checkers import ContactChecker, CompanyChecker
 from app.amocrm.managers import ContactManager, CompanyManager, LeadManager, MetaManager
 from app.amocrm.helpers import get_lead_id_from_data, get_lead_main_contact_id
 
+from sqlmodel import Session
 from typing import Tuple
 
 from celery.utils.log import get_task_logger
@@ -14,12 +15,12 @@ logger = get_task_logger(__name__)
 class HookHandler:
     """Класс для обработки хука на обновление сделки"""
 
-    def __init__(self, amocrm: AmoCRM) -> None:
+    def __init__(self, amocrm: AmoCRM, session: Session) -> None:
         self.manager = MetaManager(amocrm)
         self._contact_checker = ContactChecker(
-            self.manager.contacts, self.manager.leads)
+            self.manager.contacts, self.manager.leads, session)
         self._company_checker = CompanyChecker(
-            self.manager.companies, self.manager.leads)
+            self.manager.companies, self.manager.leads, session)
         self._amocrm = amocrm
 
     # У этого контакта есть только id и ссылка
