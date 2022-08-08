@@ -1,9 +1,9 @@
 from sqlalchemy.orm import declared_attr
 from sqlmodel import Session, SQLModel
 from sqlmodel import create_engine
-from .app_settings import settings
+from .app_settings import get_settings
 
-engine = create_engine(url=settings.database, pool_size=30)
+engine = create_engine(url=get_settings().database, pool_size=30)
 
 
 def get_session() -> Session:
