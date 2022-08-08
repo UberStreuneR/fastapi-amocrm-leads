@@ -76,9 +76,9 @@ def set_company_setting(company_setting: CompanySetting, session: Session = Depe
 
 
 @router.get("/get-custom-fields")
-def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm)):
+def get_entity_fields(amocrm: AmoCRM = Depends(get_amocrm), session: Session = Depends(get_session)):
     """Получить кастомные поля всех сущностей"""
-    manager = MetaManager(amocrm)
+    manager = MetaManager(amocrm, session)
     return manager.get_custom_fields()
 
 
