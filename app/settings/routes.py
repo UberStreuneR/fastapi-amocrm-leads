@@ -7,7 +7,6 @@ from app.app_settings import settings
 from app.settings.schemas import StatusSetting
 from . import services
 from .tasks import company_check, contact_check, handle_hook_on_background
-from app.amocrm.helpers import get_custom_fields
 from app.amocrm.managers import MetaManager
 
 from sqlmodel import Session
