@@ -28,7 +28,7 @@ class StageIdsSetter:
 
         if self.stage_ids.success_stage_id is None:
             response = self.amocrm.make_request(
-                "get", f"api/v4/leads/pipelines/{self.settings.pipeline_id}")
+                "get", f"api/v4/leads/pipelines/{self.stage_ids.pipeline_id}")
             for status in response["_embedded"]["statuses"]:
                 if status["name"] == "Закрыто. Оплата получена":
                     return status["id"]
