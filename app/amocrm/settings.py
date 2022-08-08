@@ -7,10 +7,10 @@ class SettingsSetter:
 
     def __init__(self, amocrm: AmoCRM) -> None:
         self.amocrm = amocrm
+        self.settings = get_settings()
         self.set_pipeline_id()
         self.set_success_stage_id()
         self.set_inactive_stage_ids()
-        self.settings = get_settings()
 
     def set_pipeline_id(self) -> None:
         """Установить id воронки Продажа"""
