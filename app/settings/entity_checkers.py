@@ -1,4 +1,5 @@
 from __future__ import annotations
+from app.logger import logger as app_logger
 from abc import ABC, abstractmethod
 
 from .schemas import CompanySetting, ContactSetting, StatusSetting
@@ -89,6 +90,8 @@ class EntityChecker(ABC):
                             entity_id, field_id, value)
                     else:
                         logger.info(
+                            f"\nValues equal: {custom_field['values'][0]['value']} == {value}")
+                        app_logger.info(
                             f"\nValues equal: {custom_field['values'][0]['value']} == {value}")
                     return
             # если нет полей с таким id

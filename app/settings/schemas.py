@@ -35,16 +35,22 @@ class CompanySetting(DatabaseModel, BaseSetting, table=True):
 
 
 class ContactCheckStatus(DatabaseModel, BaseModel, table=True):
+    """Статус проверки контакта"""
+
     id: Optional[int] = Field(default=None, primary_key=True)
     running: bool = False
 
 
 class CompanyCheckStatus(DatabaseModel, BaseModel, table=True):
+    """Статус проверки компании"""
+
     id: Optional[int] = Field(default=None, primary_key=True)
     running: bool = False
 
 
 class UpdateStageIds(BaseModel):
+    """Схема обновления объекта id и воронок"""
+
     pipeline_id: Optional[int] = None
     success_stage_id: Optional[int] = None
     inactive_stage_ids: Optional[List[int]] = Field(
@@ -52,4 +58,6 @@ class UpdateStageIds(BaseModel):
 
 
 class StageIds(DatabaseModel, UpdateStageIds, table=True):
+    """Объект id и воронок"""
+
     id: Optional[int] = Field(default=None, primary_key=True)

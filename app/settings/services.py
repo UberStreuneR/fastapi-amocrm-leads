@@ -4,18 +4,25 @@ from typing import List
 
 
 def get_status_settings(session: Session) -> List[StatusSetting]:
+    """Получить настройки Статуса клиента"""
     return session.query(StatusSetting).all()
 
 
 def get_status_settings_for_company(session: Session) -> List[StatusSetting]:
+    """Получить настройки статуса клиента для компании"""
+
     return session.query(StatusSetting).where(StatusSetting.entity_type == "company").all()
 
 
 def get_status_settings_for_contact(session: Session) -> List[StatusSetting]:
+    """Получить настройки статуса клиента для контакта"""
+
     return session.query(StatusSetting).where(StatusSetting.entity_type == "contact").all()
 
 
 def save_status_settings(session: Session, status_settings: List[StatusSetting]) -> List[StatusSetting]:
+    """Сохранить настройки статуса клиента"""
+
     delete_status_settings(session)
     result = []
     for status_setting in status_settings:
@@ -24,16 +31,22 @@ def save_status_settings(session: Session, status_settings: List[StatusSetting])
 
 
 def delete_status_settings(session: Session) -> None:
+    """Удалить настройки статуса клиента"""
+
     instances = session.query(StatusSetting).all()
     for instance in instances:
         session.delete(instance)
 
 
 def get_contact_setting(session: Session) -> ContactSetting:
+    """Получить настройки для контакта"""
+
     return session.query(ContactSetting).first()
 
 
 def set_contact_setting(session: Session, contact_setting: ContactSetting) -> ContactSetting:
+    """Установить настройки для контакта"""
+
     instance = session.query(ContactSetting).first()
     if instance is None:
         instance = ContactSetting.create(session, **contact_setting.dict())
@@ -45,10 +58,14 @@ def set_contact_setting(session: Session, contact_setting: ContactSetting) -> Co
 
 
 def get_company_setting(session: Session) -> CompanySetting:
+    """Получить настройки для компании"""
+
     return session.query(CompanySetting).first()
 
 
 def set_company_setting(session: Session, company_setting: CompanySetting) -> CompanySetting:
+    """Установить настройки компании"""
+
     instance = session.query(CompanySetting).first()
     if instance is None:
         instance = CompanySetting.create(session, **company_setting.dict())
@@ -60,6 +77,8 @@ def set_company_setting(session: Session, company_setting: CompanySetting) -> Co
 
 
 def set_contact_check_status(session: Session, running: bool) -> ContactCheckStatus:
+    """Установить статус проверки контакта"""
+
     instance = session.query(ContactCheckStatus).first()
     if instance is None:
         instance = ContactCheckStatus.create(session, running=running)
@@ -69,6 +88,8 @@ def set_contact_check_status(session: Session, running: bool) -> ContactCheckSta
 
 
 def get_contact_check_status(session: Session) -> bool:
+    """Получить статус проверки контакта"""
+
     instance = session.query(ContactCheckStatus).first()
     if instance is None:
         return False
@@ -76,6 +97,8 @@ def get_contact_check_status(session: Session) -> bool:
 
 
 def set_company_check_status(session: Session, running: bool) -> CompanyCheckStatus:
+    """Установить статус проверки компании"""
+
     instance = session.query(CompanyCheckStatus).first()
     if instance is None:
         instance = CompanyCheckStatus.create(session, running=running)
@@ -85,6 +108,8 @@ def set_company_check_status(session: Session, running: bool) -> CompanyCheckSta
 
 
 def get_company_check_status(session: Session) -> bool:
+    """Получить статус проверки компании"""
+
     instance = session.query(CompanyCheckStatus).first()
     if instance is None:
         return False
@@ -92,6 +117,8 @@ def get_company_check_status(session: Session) -> bool:
 
 
 def get_stage_ids(session: Session) -> StageIds:
+    """Получить объект id стадий и воронок"""
+
     instance = session.query(StageIds).first()
     if instance is None:
         return StageIds.create(session)
@@ -99,6 +126,8 @@ def get_stage_ids(session: Session) -> StageIds:
 
 
 def set_stage_ids(session: Session, update_data: UpdateStageIds) -> StageIds:
+    """Получить объект id стадий и воронок"""
+
     instance = session.query(StageIds).first()
     if instance is None:
         return StageIds.create(session, **update_data.dict())

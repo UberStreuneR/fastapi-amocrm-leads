@@ -35,7 +35,7 @@ class StageIdsSetter:
                 if status["name"] == "Закрыто. Оплата получена":
                     self.stage_ids.success_stage_id = status["id"]
                     self.session.flush()
-                    return
+                    break
 
     def get_inactive_stage_ids(self) -> List[int]:
         """Получить ids неактивных этапов"""

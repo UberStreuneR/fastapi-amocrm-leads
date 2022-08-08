@@ -54,7 +54,7 @@ class AmoCRM:
         """client_id интеграции"""
         return self._client_id
 
-    def authorize(self, grant_type: str, token: str) -> dict:
+    def _authorize(self, grant_type: str, token: str) -> None:
         """
         Пройти авторизацию с указанным grant_type,
         поддерживаются refresh_token и authorization_code
@@ -102,9 +102,9 @@ class AmoCRM:
             # Если вернулся код 401 и этот запрос не связан с авторизацией, то мы
             # поочередно пробуем авторизоваться через refresh_token и authorization_code
             try:
-                self.authorize("refresh_token", self._refresh_token)
+                self._authorize("refresh_token", self._refresh_token)
             except UnexpectedResponseCustomException:
-                self.authorize("authorization_code", self._auth_code)
+                self._authorize("authorization_code", self._auth_code)
 
             return self.make_request(method, path, data)
 

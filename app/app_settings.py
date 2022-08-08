@@ -4,6 +4,7 @@ from typing import List
 
 
 class Settings(BaseSettings):
+    """Объект настроек приложения"""
 
     database: PostgresDsn
     app_host: str
