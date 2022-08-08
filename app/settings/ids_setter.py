@@ -41,7 +41,7 @@ class StageIdsSetter:
         """Получить ids неактивных этапов"""
 
         inactive_statuses = []
-        if self.stage_ids.inactive_stage_ids is None:
+        if self.stage_ids.inactive_stage_ids is None or len(self.stage_ids.inactive_stage_ids) == 0:
             response = self.amocrm.make_request(
                 "get", "api/v4/leads/pipelines")
             for pipeline in response["_embedded"]["pipelines"]:
