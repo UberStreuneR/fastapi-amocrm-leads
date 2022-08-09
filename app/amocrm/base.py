@@ -66,6 +66,7 @@ class AmoCRM:
         result = self.make_request(
             "post", "oauth2/access_token", data, is_auth=True)
 
+        logger.info(f"Result: {result}")
         self._access_token = result["access_token"]
         self._refresh_token = result["refresh_token"]
 
@@ -104,7 +105,7 @@ class AmoCRM:
             raise BadResponseCustomException(response)
         elif response.status_code >= 300:
             raise UnexpectedResponseCustomException(response)
-        # logger.info(f"Response: {response.status_code} {response.json()}")
+        logger.info(f"Response: {response.status_code} {response.json()}")
         return response.json()
 
     def get_many(
