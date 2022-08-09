@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from app.database import get_session
 from .schemas import IntegrationInstall, Integration, IntegrationUpdate
 from . import services
-
+from app.logger import logger
 from sqlmodel import Session
 
 
@@ -20,6 +20,7 @@ def install_integration(
     account = referer.split(".", 1)[0]
     data = IntegrationInstall(
         client_id=client_id, account=account, auth_code=code)
+    logger.info(f"Integration install: {data.dict()}")
     services.install_integration(session, data)
 
 
