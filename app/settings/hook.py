@@ -34,6 +34,8 @@ class HookHandler:
         try:
             return contact_companies[0]["id"], contact_data
         except IndexError:
+            if contact_data:
+                return None, contact_data
             return None, None
 
     def get_main_contact_and_company_ids(self, data) -> Tuple[int, int, dict | None]:

@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: docker
       POSTGRES_DB: contact_level
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/postgres:/var/lib/postgresql/data:z
 
   worker:
     build: .
@@ -35,5 +35,5 @@ services:
       - rabbitmq
 
   rabbitmq:
-    container_name: rabbitmq
+    container_name: contact_level_rabbitmq
     image: "rabbitmq:3.10.5"

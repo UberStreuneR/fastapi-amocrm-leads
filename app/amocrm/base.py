@@ -8,6 +8,8 @@ import time
 
 from typing import Callable, Union, List, Generator
 from app.logger import logger
+from celery.utils.log import get_task_logger
+celery_logger = get_task_logger(__name__)
 
 
 class AmoCRM:
@@ -66,7 +68,6 @@ class AmoCRM:
         result = self.make_request(
             "post", "oauth2/access_token", data, is_auth=True)
 
-        logger.info(f"Result: {result}")
         self._access_token = result["access_token"]
         self._refresh_token = result["refresh_token"]
 
